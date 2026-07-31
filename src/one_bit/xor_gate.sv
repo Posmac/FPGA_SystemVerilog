@@ -12,7 +12,6 @@ module XOR_Gate_logic(
 
 endmodule
 
-
 module XOR_Gate_bit(
   input bit a_in,
   input bit b_in,
