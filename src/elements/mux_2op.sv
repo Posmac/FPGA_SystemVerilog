@@ -17,7 +17,7 @@ module MUX_2_Op_Multi_logic(
             2'b01: a_out = b_in;
             2'b10: a_out = c_in;
             2'b11: a_out = d_in;
-            default: out = '0;
+            default: a_out = '0;
         endcase
     end
 
