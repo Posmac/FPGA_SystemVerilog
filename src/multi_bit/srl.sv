@@ -5,6 +5,7 @@ import constants::*;
 module RIGHT_BIT_SHIFT(
     input logic[ARCHITECTURE_WIDTH - 1: 0]  a_in,
     input logic[4:0]                        op_in,
+    input logic                             fill_bit,
     output logic[ARCHITECTURE_WIDTH - 1: 0] a_out
 );
     //ACTUAL SHIFT
@@ -75,7 +76,7 @@ module RIGHT_BIT_SHIFT(
                 if (i + 16 < ARCHITECTURE_WIDTH) begin
                     mask_16_res[i] = mask_in[i + 16];
                 end else begin
-                    mask_16_res[i] = 1'b0;
+                    mask_16_res[i] = fill_bit;
                 end
             end
         end else begin
@@ -91,7 +92,7 @@ module RIGHT_BIT_SHIFT(
                 if (i + 8 < ARCHITECTURE_WIDTH) begin
                     mask_8_res[i] = mask_16_res[i + 8];
                 end else begin
-                    mask_8_res[i] = 1'b0;
+                    mask_8_res[i] = fill_bit;
                 end
             end
         end else begin
@@ -107,7 +108,7 @@ module RIGHT_BIT_SHIFT(
                 if (i + 4 < ARCHITECTURE_WIDTH) begin
                     mask_4_res[i] = mask_8_res[i + 4];
                 end else begin
-                    mask_4_res[i] = 1'b0;
+                    mask_4_res[i] = fill_bit;
                 end
             end
         end else begin
@@ -123,7 +124,7 @@ module RIGHT_BIT_SHIFT(
                 if (i + 2 < ARCHITECTURE_WIDTH) begin
                     mask_2_res[i] = mask_4_res[i + 2];
                 end else begin
-                    mask_2_res[i] = 1'b0;
+                    mask_2_res[i] = fill_bit;
                 end
             end
         end else begin
@@ -139,7 +140,7 @@ module RIGHT_BIT_SHIFT(
                 if (i + 1 < ARCHITECTURE_WIDTH) begin
                     mask_out[i] = mask_2_res[i + 1];
                 end else begin
-                    mask_out[i] = 1'b0;
+                    mask_out[i] = fill_bit;
                 end
             end
         end else begin

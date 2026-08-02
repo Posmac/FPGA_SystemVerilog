@@ -7,7 +7,6 @@ module LEFT_BIT_SHIFT(
     input logic[4:0]                        op_in,
     output logic[ARCHITECTURE_WIDTH - 1: 0] a_out
 );
-
     //invert a_in
     logic[ARCHITECTURE_WIDTH - 1: 0] reversed_in;
     assign reversed_in = {<<{a_in}}; // Revert bits order
@@ -16,6 +15,7 @@ module LEFT_BIT_SHIFT(
     RIGHT_BIT_SHIFT rbs(
         .a_in(reversed_in),
         .op_in(op_in),
+        .fill_bit(1'b0)
         .a_out(inv_out)
     );
 
