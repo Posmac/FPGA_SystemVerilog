@@ -77,7 +77,7 @@ module ALU_RISCV32I(
     logic[ARCHITECTURE_WIDTH - 1: 0] SLL_out;
     SLL_Multi_logic SLL(
         .a_in(a_in),
-        .b_in(b_in),
+        .op_in(b_in[4:0]),
         .a_out(SLL_out)
     );
 
@@ -85,7 +85,8 @@ module ALU_RISCV32I(
     logic[ARCHITECTURE_WIDTH - 1: 0] SRL_out;
     SRL_Multi_logic SRL(
         .a_in(a_in),
-        .b_in(b_in),
+        .op_in(b_in[4:0]),
+        .fill_bit(1'b0),
         .a_out(SRL_out)
     );
 
@@ -93,7 +94,7 @@ module ALU_RISCV32I(
     logic[ARCHITECTURE_WIDTH - 1: 0] SRA_out;
     SRA_Multi_logic SRA(
         .a_in(a_in),
-        .b_in(b_in),
+        .op_in(b_in[4:0]),
         .a_out(SRA_out)
     );
 

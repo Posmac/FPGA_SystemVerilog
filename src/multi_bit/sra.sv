@@ -7,12 +7,12 @@
 
 import constants::*;
 
-module ARITHMETIC_RIGHT_SHIFT(
+module SRA_Multi_logic(
     input logic[ARCHITECTURE_WIDTH - 1: 0]  a_in,
     input logic[4:0]                        op_in,
     output logic[ARCHITECTURE_WIDTH - 1: 0] a_out
 );
-    RIGHT_BIT_SHIFT rbs(
+    SRL_Multi_logic rbs(
         .a_in(a_in),
         .op_in(op_in),
         .fill_bit(a_in[ARCHITECTURE_WIDTH - 1]),

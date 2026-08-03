@@ -17,7 +17,7 @@ module SLTU_Multi_logic(
     logic[ARCHITECTURE_WIDTH - 1: 0] b_inv;
     INVERTOR_Multi_logic INV_b(
         .a_in(b_in),
-        .b_in(b_inv)
+        .a_out(b_inv)
     );
 
     logic carry;

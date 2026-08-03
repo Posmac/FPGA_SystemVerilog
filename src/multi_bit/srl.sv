@@ -2,7 +2,7 @@
 
 import constants::*;
 
-module RIGHT_BIT_SHIFT(
+module SRL_Multi_logic(
     input logic[ARCHITECTURE_WIDTH - 1: 0]  a_in,
     input logic[4:0]                        op_in,
     input logic                             fill_bit,
@@ -46,7 +46,7 @@ module RIGHT_BIT_SHIFT(
     logic [ARCHITECTURE_WIDTH - 1 : 0] shift_2_result;
     always_comb begin
         for (int i = 0; i < ARCHITECTURE_WIDTH; i = i + 1) begin : shift_2_loop
-            if (op_in[2]) begin
+            if (op_in[1]) begin
                 shift_2_result[i] = shift_4_result[(i + 2) % ARCHITECTURE_WIDTH];
             end else begin
                 shift_2_result[i] = shift_4_result[i];
@@ -57,7 +57,7 @@ module RIGHT_BIT_SHIFT(
     logic [ARCHITECTURE_WIDTH - 1 : 0] shift_out;
     always_comb begin
         for (int i = 0; i < ARCHITECTURE_WIDTH; i = i + 1) begin : shift_1_loop
-            if (op_in[2]) begin
+            if (op_in[0]) begin
                 shift_out[i] = shift_2_result[(i + 1) % ARCHITECTURE_WIDTH];
             end else begin
                 shift_out[i] = shift_2_result[i];
