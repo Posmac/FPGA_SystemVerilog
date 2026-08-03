@@ -1,117 +1,64 @@
-# FPGA RISC-V32IM CPU + GPU
+# FPGA RISC-V CPU + GPU
 
-## Project goal
-Build an educational but synthesis-friendly FPGA SoC around a 5-stage pipelined RISC-V 32-bit CPU (RV32I first, then RV32M) and a simple GPU/video pipeline.
+## 1. Why this project exists
+This project exists to build a custom computing platform on FPGA and go through the full path from basic logic blocks to a working CPU + GPU system.
 
-Target outcomes:
-- Stable RV32I ALU and core datapath on FPGA
-- Stable 5-stage CPU pipeline (IF/ID/EX/MEM/WB)
-- Deterministic hazard handling (forwarding, stalls, flushes)
-- RV32M extension support (MUL/DIV family)
-- Memory-mapped GPU block (framebuffer or tile engine)
-- Repeatable simulation and synthesis flow
+Practical value:
+- hands-on digital design practice in SystemVerilog;
+- understanding how CPU datapath and control path are built;
+- creating a base for graphics and system-level experiments on real hardware.
 
-## Target CPU microarchitecture
-- Pipeline: IF -> ID -> EX -> MEM -> WB
-- Baseline ISA: RV32I
-- Next ISA step: RV32M
-- Required control features:
-	- data hazard detection and forwarding
-	- load-use stall insertion
-	- branch/jump flush and PC redirection
-	- clean reset and pipeline register initialization
+## 2. Project goal: CPU + GPU
+Build an FPGA system with a 32-bit RISC-V CPU and a simple GPU block.
 
-## Current state
-Status: pre-alpha (foundation stage).
+Final target:
+- CPU: a 5-stage pipeline (IF, ID, EX, MEM, WB), starting with RV32I and then extending to RV32M;
+- GPU: a separate memory-mapped block for basic graphics output;
+- CPU and GPU connected through shared memory/interface and synchronization.
 
-What is already in the repository:
-- One-bit logic cells and combinational primitives in src/one_bit
-- Multi-bit arithmetic and logic blocks in src/multi_bit
-- Composite units in src/elements
-- RV32I ALU top-level draft in src/riscv32i/alu.sv
-- Several self-checking testbenches in tb (adder, subtractor, incrementor, gates)
-- Synthesis artifact example in build/rls.json
+## 3. Implementation plan (high-level)
+1. ALU
+- finalize and stabilize RV32I operations (add/sub/logic/shift/slt/sltu);
+- remove simulation incompatibilities and close basic corner cases.
 
-## Quality assessment
-Overall score: 6.0/10.
+2. PC and Fetch
+- implement the program counter (PC), increment logic, and branch/jump redirection;
+- add instruction fetch logic (IF stage).
 
-Strengths:
-- Good decomposition into one-bit and multi-bit reusable blocks
-- Uses parameterized architecture width through constants package
-- Includes random plus corner-case style tests for some arithmetic modules
-- Clear educational intent and readable module boundaries
+3. Decoder and Control
+- decode RV32I instructions;
+- generate control signals for ALU, register file, memory, and branch logic.
 
-Main risks and issues:
-- Build and simulation flow is not yet reproducible end-to-end (command hints are partially outdated)
-- Shift path still has simulator portability issues (Icarus does not support the streaming concatenation used in sll)
-- Partial test coverage for RV32I ALU operations and no integration-level CPU tests yet
-- Mixed naming style and typo drift reduce maintainability (example: SUBSTRACTOR spelling)
+4. Register file and Datapath
+- integrate the register file and immediate generator;
+- assemble the full datapath across pipeline stages.
 
-## Done checklist
-- [x] Basic one-bit gates and adders
-- [x] 32-bit adder/subtractor/incrementor/decrementor family
-- [x] 32-bit bitwise blocks (and/or/xor/xnor/invert)
-- [x] Initial shift and compare blocks (sll/srl/sra/slt/sltu)
-- [x] ALU shift wiring migrated to SLL/SRL/SRA modules
-- [x] Initial ALU wiring for RV32I R-type operation map
-- [x] Initial unit-level testbenches
+5. Memory
+- connect instruction and data memory;
+- prepare MMIO space for peripherals and GPU.
 
-## Work remaining
-Priority 0 (stabilization):
-- [x] Explicitly wire shift amount as b_in[4:0] in ALU shift ops
-- [ ] Resolve sll implementation portability for Icarus (or standardize on a simulator that supports current syntax)
-- [ ] Unify and verify simulator command set (iverilog/verilator/questa)
-- [ ] Add a single smoke test that compiles all RTL and runs at least one ALU test
+6. Synchronization
+- add forwarding, stall, and flush handling for hazards;
+- synchronize CPU and GPU via control/status registers and interrupts/polling.
 
-Priority 1 (RV32I core readiness):
-- [ ] Finalize ALU operation truth table against RISC-V spec
-- [ ] Add branch compare outputs and flags as needed by control path
-- [ ] Build register file, immediate generator, and control decoder
-- [ ] Implement pipeline registers IF/ID, ID/EX, EX/MEM, MEM/WB
-- [ ] Implement forwarding unit (EX/MEM -> EX, MEM/WB -> EX)
-- [ ] Implement hazard unit (load-use stall + control hazard flush)
-- [ ] Implement branch/jump resolution path and PC muxing
-- [ ] Add instruction-level tests for ADD/SUB/logic/shift/SLT/SLTU
+7. GPU block
+- first working version: framebuffer or tile-based block;
+- minimal graphics demo scenario.
 
-Priority 2 (RV32M extension):
-- [ ] Add MUL, MULH, MULHSU, MULHU
-- [ ] Add DIV, DIVU, REM, REMU with defined latency and corner-case behavior
-- [ ] Extend decode/control and verification suite for RV32M
+## 4. What is already done
+The repository already contains a working foundation of low-level logic and ALU-related components.
 
-Priority 3 (memory subsystem and platform):
-- [ ] Introduce instruction/data memory model and bus interface
-- [ ] Define MMIO map
-- [ ] Add timer/UART or debug MMIO for bring-up
+Completed modules:
+- one-bit primitives: AND/OR/XOR/XNOR/NOT/NAND/NOR, half adder, full adder, mux;
+- multi-bit blocks: adder, subtractor, incrementor, decrementor, invertor, bitwise logic;
+- shift and compare blocks: sll/srl/sra/slt/sltu;
+- composite blocks: arithmetic_unit, logic_unit, mux_2op, mux_4op;
+- top-level RV32I R-type ALU with operation selection by op_in.
 
-Priority 4 (GPU block):
-- [ ] Choose first GPU scope: framebuffer blitter or tile rasterizer
-- [ ] Define CPU-GPU command interface and synchronization
-- [ ] Add video timing output path (for example VGA/HDMI pipeline)
-- [ ] Add demo workload (moving sprite, triangle, or Mandelbrot)
+Verification done:
+- unit testbenches exist for basic blocks (including random testing for part of the 32-bit arithmetic);
+- a synthesis artifact (Yosys JSON) exists to inspect logic structure.
 
-Priority 5 (FPGA implementation):
-- [ ] Add board constraints and clock/reset tree
-- [ ] Add synthesis, PnR, timing, and bitstream scripts
-- [ ] Close timing and run on hardware
-- [ ] Measure LUT/FF/BRAM/DSP and Fmax, then optimize
-
-## Suggested repository structure growth
-- docs/ for architecture notes and ISA compliance tracking
-- sim/ for unified simulation scripts
-- scripts/ for synthesis and CI helpers
-- ci/ for lint and smoke checks
-
-## Suggested development workflow
-1. Keep every RTL change paired with at least one test update.
-2. Run lint + compile + unit tests before committing.
-3. Track ISA coverage in a visible checklist.
-4. Add a lightweight CI smoke pipeline early.
-
-## Near-term milestone proposal (2-4 weeks)
-- Milestone M1: RV32I ALU stable and fully tested
-- Milestone M2: 5-stage RV32I pipeline runs arithmetic and memory microprograms in simulation
-- Milestone M3: Hazard logic validated (forwarding/stall/flush test matrix green)
-- Milestone M4: FPGA bring-up with UART prints and basic GPU MMIO register access
-
-## Notes
-This repository has a strong educational hardware base. The main next step is engineering hardening: consistent interfaces, deterministic build flow, and coverage-driven verification.
+Current state:
+- the CPU foundation is ready;
+- the next major step is integrating the full 5-stage pipeline around the current ALU and datapath blocks.
