@@ -52,6 +52,7 @@ Completed modules:
 - one-bit primitives: AND/OR/XOR/XNOR/NOT/NAND/NOR, half adder, full adder, mux;
 - multi-bit blocks: adder, subtractor, incrementor, decrementor, invertor, bitwise logic;
 - shift and compare blocks: sll/srl/sra/slt/sltu;
+- immediate preprocessing and branch blocks: imm_pre_alu, branching;
 - composite blocks: arithmetic_unit, logic_unit, mux_2op, mux_4op;
 - top-level RV32I R-type ALU with operation selection by op_in.
 

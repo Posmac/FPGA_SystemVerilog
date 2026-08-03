@@ -35,7 +35,7 @@ module IMM_Pre_ALU(
         if ((func3_in == 3'b101) && imm_in[10]) begin
             op_out = {1'b1, func3_in}; 
         end else begin
-            op_out = {1 me'b0, func3_in}; 
+            op_out = {1'b0, func3_in}; 
         end
 
         if (func3_in == 3'b011) begin
