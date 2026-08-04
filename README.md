@@ -63,3 +63,6 @@ Verification done:
 Current state:
 - the CPU foundation is ready;
 - the next major step is integrating the full 5-stage pipeline around the current ALU and datapath blocks.
+
+  <img width="1212" height="952" alt="image" src="https://github.com/user-attachments/assets/fd9a6738-2000-4d46-89f0-76fabb85364c" />
+
