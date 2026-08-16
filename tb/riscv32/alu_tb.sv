@@ -111,6 +111,12 @@ module alu_tb;
         check_result("ADD TEST");
     end
 
+    // Edge cases for ADD
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("ADD EDGE: 0+0");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'h1; #10; check_result("ADD EDGE: MAX+1");
+    tb_a_in = 32'h7FFFFFFF; tb_b_in = 32'h7FFFFFFF; #10; check_result("ADD EDGE: MAX_INT+MAX_INT");
+    tb_a_in = 32'h80000000; tb_b_in = 32'h80000000; #10; check_result("ADD EDGE: MIN_INT+MIN_INT");
+
     $display("---------------------------------------");
     $display("ADD Success");
 	$display("---------------------------------------");
@@ -131,6 +137,12 @@ module alu_tb;
         #10;
         check_result("SUB TEST");
     end
+
+    // Edge cases for SUB
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("SUB EDGE: 0-0");
+    tb_a_in = 32'b0; tb_b_in = 32'hFFFFFFFF; #10; check_result("SUB EDGE: 0-MAX");
+    tb_a_in = 32'h7FFFFFFF; tb_b_in = 32'h80000000; #10; check_result("SUB EDGE: MAX_INT-MIN_INT");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'h1; #10; check_result("SUB EDGE: MAX-1");
 
     $display("---------------------------------------");
     $display("SUB Success");
@@ -153,6 +165,12 @@ module alu_tb;
         check_result("XOR TEST");
     end
 
+    // Edge cases for XOR
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("XOR EDGE: 0^0");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'hFFFFFFFF; #10; check_result("XOR EDGE: MAX^MAX");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'b0; #10; check_result("XOR EDGE: MAX^0");
+    tb_a_in = 32'hAAAAAAAA; tb_b_in = 32'h55555555; #10; check_result("XOR EDGE: pattern^inverted");
+
     $display("---------------------------------------");
     $display("XOR Success");
 	$display("---------------------------------------");
@@ -174,6 +192,12 @@ module alu_tb;
         check_result("OR TEST");
     end
 
+    // Edge cases for OR
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("OR EDGE: 0|0");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'hFFFFFFFF; #10; check_result("OR EDGE: MAX|MAX");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'b0; #10; check_result("OR EDGE: MAX|0");
+    tb_a_in = 32'b1; tb_b_in = 32'b0; #10; check_result("OR EDGE: 1|0");
+
     $display("---------------------------------------");
     $display("OR Success");
 	$display("---------------------------------------");
@@ -194,6 +218,12 @@ module alu_tb;
         #10;
         check_result("AND TEST");
     end
+
+    // Edge cases for AND
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("AND EDGE: 0&0");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'hFFFFFFFF; #10; check_result("AND EDGE: MAX&MAX");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'b0; #10; check_result("AND EDGE: MAX&0");
+    tb_a_in = 32'b1; tb_b_in = 32'b1; #10; check_result("AND EDGE: 1&1");
 
     $display("---------------------------------------");
     $display("AND Success");
@@ -221,6 +251,12 @@ module alu_tb;
         check_result("SLL TEST");
     end
 
+    // Edge cases for SLL
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'd0; #10; check_result("SLL EDGE: MAX<<0");
+    tb_a_in = 32'b1; tb_b_in = 32'd31; #10; check_result("SLL EDGE: 1<<31");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'd31; #10; check_result("SLL EDGE: MAX<<31");
+    tb_a_in = 32'b0; tb_b_in = 32'd31; #10; check_result("SLL EDGE: 0<<31");
+
     $display("---------------------------------------");
     $display("SLL Success");
 	$display("---------------------------------------");
@@ -241,6 +277,12 @@ module alu_tb;
         #10;
         check_result("SRL TEST");
     end
+
+    // Edge cases for SRL
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'd0; #10; check_result("SRL EDGE: MAX>>0");
+    tb_a_in = 32'h80000000; tb_b_in = 32'd31; #10; check_result("SRL EDGE: 0x80000000>>31");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'd31; #10; check_result("SRL EDGE: MAX>>31");
+    tb_a_in = 32'b0; tb_b_in = 32'd31; #10; check_result("SRL EDGE: 0>>31");
 
     $display("---------------------------------------");
     $display("SRL Success");
@@ -263,6 +305,12 @@ module alu_tb;
         check_result("SRA TEST");
     end
 
+    // Edge cases for SRA
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'd0; #10; check_result("SRA EDGE: -1>>>0");
+    tb_a_in = 32'h80000000; tb_b_in = 32'd31; #10; check_result("SRA EDGE: MIN_INT>>>31");
+    tb_a_in = 32'h7FFFFFFF; tb_b_in = 32'd31; #10; check_result("SRA EDGE: MAX_INT>>>31");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'd31; #10; check_result("SRA EDGE: -1>>>31");
+
     $display("---------------------------------------");
     $display("SRA Success");
 	$display("---------------------------------------");
@@ -284,6 +332,12 @@ module alu_tb;
         check_result("SLU TEST");
     end
 
+    // Edge cases for SLT
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("SLT EDGE: 0<0");
+    tb_a_in = 32'h80000000; tb_b_in = 32'h7FFFFFFF; #10; check_result("SLT EDGE: MIN_INT<MAX_INT");
+    tb_a_in = 32'h7FFFFFFF; tb_b_in = 32'h80000000; #10; check_result("SLT EDGE: MAX_INT<MIN_INT");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'b1; #10; check_result("SLT EDGE: -1<1");
+
     $display("---------------------------------------");
     $display("SLU Success");
 	$display("---------------------------------------");
@@ -304,6 +358,12 @@ module alu_tb;
         #10;
         check_result("SLTU TEST");
     end
+
+    // Edge cases for SLTU
+    tb_a_in = 32'b0; tb_b_in = 32'b0; #10; check_result("SLTU EDGE: 0<0");
+    tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'h7FFFFFFF; #10; check_result("SLTU EDGE: MAX<0x7FFFFFFF");
+    tb_a_in = 32'h80000000; tb_b_in = 32'hFFFFFFFF; #10; check_result("SLTU EDGE: 0x80000000<MAX");
+    tb_a_in = 32'b1; tb_b_in = 32'hFFFFFFFF; #10; check_result("SLTU EDGE: 1<MAX");
 
     $display("---------------------------------------");
     $display("SLTU Success");
