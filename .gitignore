@@ -2,3 +2,4 @@ build
 .DS_Store
 .venv
 obj_dir
+dump.vcd
