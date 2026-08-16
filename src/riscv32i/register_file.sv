@@ -36,7 +36,7 @@ import constants::*;
 module Register_File(
     input logic                             clk,
     input logic                             rst_in,
-    input logic[ARCHITECTURE_WIDTH - 1: 0]  instruction;
+    input logic[ARCHITECTURE_WIDTH - 1: 0]  instruction,
 
     input logic[ARCHITECTURE_WIDTH - 1: 0]  wdata,
     input logic                             write_enabled,
@@ -44,9 +44,9 @@ module Register_File(
     output logic[ARCHITECTURE_WIDTH - 1: 0] rdata1,
     output logic[ARCHITECTURE_WIDTH - 1: 0] rdata2
 );
-    logic addr1 = instruction[19:15];
-    logic addr2 = instruction[24-20];
-    logic waddr = instruction[11:7];
+    logic[4:0] addr1 = instruction[19:15];
+    logic[4:0] addr2 = instruction[24-20];
+    logic[4:0] waddr = instruction[11:7];
 
     //convert write_enabled for waddr to array of write_enabled bus
     logic [31:0] load_en_bus;

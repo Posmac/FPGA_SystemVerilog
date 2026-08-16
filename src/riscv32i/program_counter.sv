@@ -10,21 +10,21 @@ import constants::*;
 module PC_Multi_logic (
     input  logic                             clk,
     input  logic                             rst_in,
-    
-    input  logic                             pc_next,   // New value from branch control unit 
+
+    input  logic[ARCHITECTURE_WIDTH - 1: 0]  pc_next,   // New value from branch control unit
     input  logic                             write_en,  // Stalling: 1 - обновляем PC, 0 - замораживаем (для будущих пайплайнов/пауз)
 
-    output logic [ARCHITECTURE_WIDTH - 1:0]  pc_out,   
+    output logic [ARCHITECTURE_WIDTH - 1:0]  pc_out,
     output logic [ARCHITECTURE_WIDTH - 1:0]  pc_plus4
 );
     //calculate possible new value of the PC for PC+4 and PC+IMM
     logic[ARCHITECTURE_WIDTH - 1: 0] reg_plu4_out;
     logic[ARCHITECTURE_WIDTH - 1: 0] reg_out;
-    FULL_ADDER_logic reg_plus4(
+    FULL_ADDER_Multi_logic reg_plus4(
         .a_in(reg_out),
         .b_in(32'd4),
         .c_in(1'b0),
-        .half_sum_out(reg_plu4_out),
+        .hf_out(reg_plu4_out),
         .carry_out()
     );
 

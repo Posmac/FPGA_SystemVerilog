@@ -14,7 +14,7 @@ module D_Flip_flop(
     );
 
     logic d_selected;
-    MUX_1_Op_Multi_logic d_mux(
+    MUX_1_Op_Multi_single d_mux(
         .a_in (q_out),
         .b_in (d_in),      
         .op_in(load_in),

@@ -7,9 +7,12 @@ module SLL_Multi_logic(
     input logic[4:0]                        op_in,
     output logic[ARCHITECTURE_WIDTH - 1: 0] a_out
 );
-    //invert a_in
-    logic[ARCHITECTURE_WIDTH - 1: 0] reversed_in;
-    assign reversed_in = {<<{a_in}}; // Revert bits order
+    logic [ARCHITECTURE_WIDTH - 1: 0] reversed_in;
+    always_comb begin
+        for (int i = 0; i < ARCHITECTURE_WIDTH; i++) begin
+            reversed_in[i] = a_in[(ARCHITECTURE_WIDTH - 1) - i];
+        end
+    end
 
     logic[ARCHITECTURE_WIDTH - 1: 0] inv_out;
     SRL_Multi_logic rbs(
@@ -20,6 +23,10 @@ module SLL_Multi_logic(
     );
 
     //invert out
-    assign a_out = {<<{inv_out}};
+    always_comb begin
+        for (int i = 0; i < ARCHITECTURE_WIDTH; i++) begin
+            a_out[i] = inv_out[(ARCHITECTURE_WIDTH - 1) - i];
+        end
+    end
 
 endmodule

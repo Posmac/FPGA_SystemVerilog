@@ -20,7 +20,7 @@ module Branch_Unit(
     input logic[ARCHITECTURE_WIDTH -1: 0]   imm,
 
     output logic[ARCHITECTURE_WIDTH - 1: 0] pc_next,
-    output logic[ARCHITECTURE_WIDTH - 1: 0] pc_write,
+    output logic[ARCHITECTURE_WIDTH - 1: 0] pc_write
 );
     logic beq; //0x0
     logic bne; //0x1 
@@ -41,21 +41,21 @@ module Branch_Unit(
     assign opcode = instruction[6:0];
     assign func3 = instruction[14:12];
 
-    assing alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
-    assing alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
-    assing alu_op = 4'b0000; //op: {func7[5], ..func3]
+    assign alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
+    assign alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
+    assign alu_op = 4'b0000; //op: {func7[5], ..func3]
 
-    assing mem_read = 1'b0;  //read from data memory: 0/1
-    assing mem_write = 1'b0; //write to memory
+    assign mem_read = 1'b0;  //read from data memory: 0/1
+    assign mem_write = 1'b0; //write to memory
 
-    assing reg_file_write_en = 1'b0; //save to reg file or not: 0/1
-    assing reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
+    assign reg_file_write_en = 1'b0; //save to reg file or not: 0/1
+    assign reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
 
     always_comb begin : op_selector
         unique case (opcode)
             //B type (branch)
             //if(rs1 == rs2) PC += imm
-            7'b1100011 begin
+            7'b1100011: begin
                 if (
                     beq == 1 && func3 == 3'd0
                     || bne == 1 && func3 == 3'd1
@@ -70,13 +70,13 @@ module Branch_Unit(
             end
             //J and Link 
             //rd = PC+4; PC += imm
-            7'b1101111 begin
+            7'b1101111: begin
                 pc_write = 1'b1;
                 pc_next = pc + imm;
             end
             //J and Link reg
             //rd = PC+4; PC = rs1 + imm
-            7'b1100111 begin 
+            7'b1100111: begin 
                 pc_write = 1'b1;
                 pc_next = rs1 + imm;
             end

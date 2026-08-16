@@ -30,13 +30,13 @@ module D_Latch(
     //combine 2 paths
     logic a_out_rst;
     logic b_out_rst;
-    MUX_1_Op_Multi_logic in_1(
+    MUX_1_Op_Multi_single in_1(
         .a_in(a_out_enabled),
         .b_in(1'b1),
         .op_in(rst_in),
         .a_out(a_out_rst)
     );
-    MUX_1_Op_Multi_logic in_2(
+    MUX_1_Op_Multi_single in_2(
         .a_in(b_out_enabled),
         .b_in(1'b0),
         .op_in(rst_in),
@@ -44,8 +44,8 @@ module D_Latch(
     );
    
     SR_Latch sr(
-        .a_in(a_out_rst),
-        .b_in(b_out_rst),
+        .s_in(a_out_rst),
+        .r_in(b_out_rst),
         .a_out(a_out)
     );
 

@@ -23,58 +23,60 @@ import constants::*;
 // sltu        [011]      0[0]0_0000             0_011 (in_3)               in_3
 
 module Control_Unit(
-    input logic[ARCHITECTURE_WIDTH - 1: 0] instruction;
+    input logic[ARCHITECTURE_WIDTH - 1: 0] instruction,
 
-    output logic                           mem_read;
-    output logic                           mem_write;
+    output logic                           mem_read,
+    output logic                           mem_write,
 
-    output logic[1:0]                      reg_file_src;
-    output logic                           reg_file_write_en;
+    output logic[1:0]                      reg_file_src,
+    output logic                           reg_file_write_en,
     
-    output logic[3:0]                      alu_op;
-    output logic                           alu_first_src;
-    output logic                           alu_second_src;
+    output logic[3:0]                      alu_op,
+    output logic                           alu_first_src,
+    output logic                           alu_second_src
 );
     logic[6:0] opcode;
     logic[2:0] func3;
+    logic      instruction_30;
 
     assign opcode = instruction[6:0];
     assign func3 = instruction[14:12];
-
-    assing alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
-    assing alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
-    assing alu_op = 4'b0000; //op: {func7[5], ..func3]
-
-    assing mem_read = 1'b0;  //read from data memory: 0/1
-    assing mem_write = 1'b0; //write to memory
-
-    assing reg_file_write_en = 1'b0; //save to reg file or not: 0/1
-    assing reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
+    assign instruction_30 = instruction[30];
 
     always_comb begin : op_selector
+        // alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
+        // alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
+        // alu_op = 4'b0000; //op: {func7[5], ..func3]
+
+        // mem_read = 1'b0;  //read from data memory: 0/1
+        // mem_write = 1'b0; //write to memory
+
+        // reg_file_write_en = 1'b0; //save to reg file or not: 0/1
+        // reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
+
         unique case (opcode)
             //R type
             // rd = rs1 XX rs2
-            7'b0110011 begin
+            7'b0110011: begin
                 reg_file_write_en = 1'b1; //enable reg file write
-                reg_file_src = 1'b00;     //write ALU out (00)
+                reg_file_src = 2'b00;     //write ALU out (00)
 
                 alu_first_src = 1'b0;       //first is rs1
                 alu_second_src = 1'b0;    //second op: rs2
-                alu_op = {instruction[30], func3}; //alu op: add,sub,xor,or, etc..
+                alu_op = {instruction_30, func3}; //alu op: add,sub,xor,or, etc..
 
                 mem_write = 1'b0; //no mem write
                 mem_read = 1'b0;  //no mem read
             end
             //I type (addi)
-            7'b0010011 begin
+            7'b0010011: begin
                 reg_file_write_en = 1'b1; //enable reg file write
-                reg_file_src = 1'b00;      //write ALU out (00)
+                reg_file_src = 2'b00;      //write ALU out (00)
 
                 alu_first_src = 1'b0;       //first is rs1
                 alu_second_src = 1'b1;    //Imm value
                 if (func3 == 3'b001 || func3 == 3'b101) begin
-                    alu_op = {instruction[30], func3};
+                    alu_op = {instruction_30, func3};
                 end else begin
                     alu_op = {1'b0, func3};
                 end
@@ -84,9 +86,9 @@ module Control_Unit(
             end
             //I type (load from memory to regfile) 
             //rd = M[rs1+imm][0:7]
-            7'b0000011 begin
+            7'b0000011: begin
                 reg_file_write_en = 1'b0; //write to reg file
-                reg_file_src = 1'b01;     //write data memory out value (01)
+                reg_file_src = 2'b01;     //write data memory out value (01)
 
                 alu_first_src = 1'b0;       //first is rs1
                 alu_second_src = 1'b1; //rs1 + Imm
@@ -97,12 +99,12 @@ module Control_Unit(
             end
             //S type (store into memory from alu)
             //M[rs1+imm][0:7] = rs2[0:7]
-            7'b0100011 begin
+            7'b0100011: begin
                 reg_file_write_en = 1'b0; //no reg file write
-                reg_file_src = 1'b0;    //dont care, because write_en = 0
+                reg_file_src = 2'b0;    //dont care, because write_en = 0
 
                 alu_first_src = 1'b0;       //first is rs1
-                alu_second_src = 1'10; //rs1 + imm
+                alu_second_src = 1'b1; //rs1 + imm
                 alu_op = 4'b0000; //ADDI
 
                 mem_write = 1'b1; //WRITE to memory
@@ -110,9 +112,9 @@ module Control_Unit(
             end
             //B type (branch)
             //if(rs1 == rs2) PC += imm
-            7'b1100011 begin
+            7'b1100011: begin
                 reg_file_write_en = 1'b0;  //no reg file write
-                reg_file_src = 1'b0;       //dont care, because write_en = 0
+                reg_file_src = 2'b0;       //dont care, because write_en = 0
 
                 alu_first_src = 1'b0;       //first is rs1
                 alu_second_src = 1'b0;     //rs1 - rs2
@@ -123,7 +125,7 @@ module Control_Unit(
             end
             //J and Link 
             //rd = PC+4; PC += imm
-            7'b1101111 begin
+            7'b1101111: begin
                 reg_file_write_en = 1'b1;   //reg file write en
                 reg_file_src = 2'b10;       //reg file wdata: PC + 4
 
@@ -136,7 +138,7 @@ module Control_Unit(
             end
             //J and Link reg
             //rd = PC+4; PC = rs1 + imm
-            7'b1100111 begin 
+            7'b1100111: begin 
                 reg_file_write_en = 1'b1;   //reg file write on
                 reg_file_src = 2'b10;       //reg file wdata: PC + 4
 
@@ -149,7 +151,7 @@ module Control_Unit(
             end
             //U load upper imm
             //rd = imm << 12
-            7'b0110111 begin
+            7'b0110111: begin
                 reg_file_write_en = 1'b1;   //reg file write on
                 reg_file_src = 2'b11;       //reg file src: imm(4)
 
@@ -162,7 +164,7 @@ module Control_Unit(
             end
             //U add upper imm to reg
             //rd = PC + (imm << 12)
-            7'b0010111 begin
+            7'b0010111: begin
                 reg_file_write_en = 1'b1;   //reg file write on
                 reg_file_src = 2'b00;       //reg file src: alu out
 
@@ -173,6 +175,8 @@ module Control_Unit(
                 mem_read = 1'b0;            //no mem read
                 mem_write = 1'b0;           //no mem write
             end
+            default: begin
+            end 
             endcase
         end
 

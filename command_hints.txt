@@ -2,3 +2,9 @@ yosys -p "read_verilog -sv src/one_bit/*.sv src/multi_bit/*.sv; hierarchy -top F
 netlistsvg my_design.json -o schema.svg && open schema.svg
 iverilog -g2012 -o full_32 src/config_pkg.sv src/one_bit/*.sv src/multi_bit/*.sv tb/full_adder_multi_tb.sv && ./full_32
 vvp full_32
+
+
+
+verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module alu_tb -f files.f
+
+yosys -p "read_verilog -sv $(cat files.f); hierarchy -top FULL_ADDER_Multi_logic; proc; opt; techmap; opt; write_json my_design.json" && netlistsvg my_design.json -o schema.svg && open schema.svg

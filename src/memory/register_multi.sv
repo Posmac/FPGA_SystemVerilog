@@ -14,7 +14,7 @@ module Register_multi(
         for (i = 0; i < ARCHITECTURE_WIDTH; i = i + 1) begin : dff_loop
             D_Flip_flop dff(
                 .clk(clk),
-                .rst_n(rst_n),
+                .rst_in(rst_in),
                 .load_in(load_in),
                 .d_in(d_in[i]),
                 .q_out(q_out[i])

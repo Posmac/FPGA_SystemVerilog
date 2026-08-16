@@ -4,9 +4,8 @@ import constants::*;
 
 module Decoder_5_to_32(
     input  logic [4:0]  a_in,
-    output logic [31:0] a_out
+    output logic [ARCHITECTURE_WIDTH - 1 : 0] a_out
 );
-    assing a_out = '0;
     always_comb begin
         unique case (a_in)
             5'd0:  a_out[0]  = 1'b1;
