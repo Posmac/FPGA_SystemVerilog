@@ -5,6 +5,6 @@ vvp full_32
 
 
 
-verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module alu_tb -f files.f
+verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module alu_tb -Wno-UNOPTFLAT -f files.f
 
 yosys -p "read_verilog -sv $(cat files.f); hierarchy -top FULL_ADDER_Multi_logic; proc; opt; techmap; opt; write_json my_design.json" && netlistsvg my_design.json -o schema.svg && open schema.svg

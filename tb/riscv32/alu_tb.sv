@@ -7,14 +7,20 @@ module alu_tb;
     logic[ARCHITECTURE_WIDTH - 1: 0] tb_b_in;
     logic[3:0] tb_op_in;
     logic[ARCHITECTURE_WIDTH - 1: 0] tb_a_out;
+    logic[ARCHITECTURE_WIDTH - 1: 0] tb_slt_out;
+    logic[ARCHITECTURE_WIDTH - 1: 0] tb_sltu_out;
 
-    logic[ARCHITECTURE_WIDTH - 1: 0]   expected;
-    
+    logic[ARCHITECTURE_WIDTH - 1: 0]   expected_alu;
+    logic[ARCHITECTURE_WIDTH - 1: 0]   expected_slt;
+    logic[ARCHITECTURE_WIDTH - 1: 0]   expected_sltu;
+
     ALU_32I alu(
         .a_in(tb_a_in),
         .b_in(tb_b_in),
         .op_in(tb_op_in),
-        .a_out(tb_a_out)
+        .a_out(tb_a_out),
+        .slt_out(tb_slt_out),
+        .sltu_out(tb_sltu_out)
     );
 
     int error_count = 0;
@@ -22,56 +28,74 @@ module alu_tb;
     task check_result(string test_name);
         begin
             test_count++;
+
+            expected_slt  = ($signed(tb_a_in) < $signed(tb_b_in)) ? 1 : 0;
+            expected_sltu = (tb_a_in < tb_b_in) ? 1 : 0;
+
+            if (tb_slt_out !== expected_slt) begin
+                $error(
+                    "SLT FLAG ERROR. A=%h B=%h OUT=%0d EXP=%0d",
+                    tb_a_in, tb_b_in, tb_slt_out, expected_slt
+                );
+            end
+
+            if (tb_sltu_out !== expected_sltu) begin
+                $error(
+                    "SLTU FLAG ERROR. A=%h B=%h OUT=%0d EXP=%0d",
+                    tb_a_in, tb_b_in, tb_sltu_out, expected_sltu
+                );
+            end
+
             if (tb_op_in == 4'b0000) begin //add
-                expected = tb_a_in + tb_b_in;
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(ADD) module for A = %d, B = %d, OP = %d. Wrong output OUT = %d. Expected: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = tb_a_in + tb_b_in;
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(ADD) module for A = %d, B = %d, OP = %d. Wrong output OUT = %d. expected_alu: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b1000) begin //sub
-                expected = tb_a_in - tb_b_in;
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(SUB) module for A = %d, B = %d, OP = %d. Wrong output OUT = %d. Expected: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = tb_a_in - tb_b_in;
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(SUB) module for A = %d, B = %d, OP = %d. Wrong output OUT = %d. expected_alu: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0100) begin //xor
                 //(a_in | b_in) & ~(a_in & b_in);
-                expected = (tb_a_in | tb_b_in) & ~(tb_a_in & tb_b_in);
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(XOR) module for A = %b, B = %b, OP = %b. Wrong output OUT = %b. Expected: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = (tb_a_in | tb_b_in) & ~(tb_a_in & tb_b_in);
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(XOR) module for A = %b, B = %b, OP = %b. Wrong output OUT = %b. expected_alu: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0110) begin //or
-                expected = (tb_a_in | tb_b_in);
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(OR) module for A = %b, B = %b, OP = %b. Wrong output OUT = %b. Expected: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = (tb_a_in | tb_b_in);
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(OR) module for A = %b, B = %b, OP = %b. Wrong output OUT = %b. expected_alu: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0111) begin //and
-                expected = (tb_a_in & tb_b_in);
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(AND) module for A = %b, B = %b, OP = %b. Wrong output OUT = %b. Expected: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = (tb_a_in & tb_b_in);
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(AND) module for A = %b, B = %b, OP = %b. Wrong output OUT = %b. expected_alu: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0001) begin //sll
-                expected = tb_a_in << (tb_b_in);
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(SLL) module for A = %b, B = %d, OP = %b. Wrong output OUT = %b. Expected: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = tb_a_in << (tb_b_in);
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(SLL) module for A = %b, B = %d, OP = %b. Wrong output OUT = %b. expected_alu: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0101) begin //srl
-                expected = tb_a_in >> tb_b_in;
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(SRL) module for A = %b, B = %d, OP = %b. Wrong output OUT = %b. Expected: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = tb_a_in >> tb_b_in;
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(SRL) module for A = %b, B = %d, OP = %b. Wrong output OUT = %b. expected_alu: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b1101) begin //sra
-                expected = $signed(tb_a_in) >>> tb_b_in;
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(SRA) module for A = %b, B = %d, OP = %b. Wrong output OUT = %b. Expected: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = $signed(tb_a_in) >>> tb_b_in;
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(SRA) module for A = %b, B = %d, OP = %b. Wrong output OUT = %b. expected_alu: %b", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0010) begin //slt
-                expected = $signed(tb_a_in) < $signed(tb_b_in) ? 1 : 0;
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(SLT) module for A = %d, B = %d, OP = %b. Wrong output OUT = %d. Expected: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = $signed(tb_a_in) < $signed(tb_b_in) ? 1 : 0;
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(SLT) module for A = %d, B = %d, OP = %b. Wrong output OUT = %d. expected_alu: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end else if (tb_op_in == 4'b0011) begin //sltu
-                expected = tb_a_in < tb_b_in ? 1 : 0;
-                if (tb_a_out !== expected) begin
-                    $error("Error in ALU(SLTU) module for A = %d, B = %d, OP = %b. Wrong output OUT = %d. Expected: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected);
+                expected_alu = tb_a_in < tb_b_in ? 1 : 0;
+                if (tb_a_out !== expected_alu) begin
+                    $error("Error in ALU(SLTU) module for A = %d, B = %d, OP = %b. Wrong output OUT = %d. expected_alu: %d", tb_a_in, tb_b_in, tb_op_in, tb_a_out, expected_alu);
                 end
             end
         end

@@ -24,9 +24,10 @@ module ALU_32I(
     input logic[ARCHITECTURE_WIDTH - 1: 0]      a_in,
     input logic[ARCHITECTURE_WIDTH - 1: 0]      b_in,
     input logic[3:0]                            op_in,
-    output logic [ARCHITECTURE_WIDTH - 1: 0]    a_out
+    output logic [ARCHITECTURE_WIDTH - 1: 0]    a_out,
+    output logic [ARCHITECTURE_WIDTH - 1: 0]    slt_out,
+    output logic [ARCHITECTURE_WIDTH - 1: 0]    sltu_out
 );
-
     //add
     logic[ARCHITECTURE_WIDTH - 1: 0] ADD_out;
     FULL_ADDER_Multi_logic ADD(
@@ -129,6 +130,8 @@ module ALU_32I(
     .in_15(32'b0),
     .op_in(op_in),
     .a_out(a_out)
-);
+    );
 
+    assign slt_out = SLT_out;
+    assign sltu_out = SLTU_out;
 endmodule

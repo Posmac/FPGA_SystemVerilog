@@ -36,9 +36,9 @@ src/memory/register_multi.sv
 src/memory/d_flip_flop.sv
 src/riscv32i/memory.sv
 src/riscv32i/alu.sv
-src/riscv32i/imm_gecoder.sv
+src/riscv32i/imm_decoder.sv
 src/riscv32i/register_file.sv
 src/riscv32i/program_counter.sv
 src/riscv32i/control_unit.sv
 src/riscv32i/branching.sv
-tb/riscv32/alu_tb.sv
+tb/riscv32/branching_tb.sv
