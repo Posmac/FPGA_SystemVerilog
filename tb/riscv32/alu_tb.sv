@@ -123,7 +123,7 @@ module alu_tb;
     
     //CHECK ADD OPERATION    
     tb_op_in = 4'b0000;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
@@ -150,7 +150,7 @@ module alu_tb;
 
     //SUB
     tb_op_in = 4'b1000;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
@@ -177,7 +177,7 @@ module alu_tb;
     
     //XOR
     tb_op_in = 4'b0100;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
@@ -204,7 +204,7 @@ module alu_tb;
 
     //OR
     tb_op_in = 4'b0110;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
@@ -231,7 +231,7 @@ module alu_tb;
 
     //AND
     tb_op_in = 4'b0111;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
@@ -263,7 +263,7 @@ module alu_tb;
     // sltu        [011]      0[0]0_0000             0_011 (in_3)               in_3
     //SLL 
     tb_op_in = 4'b0001;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom() >> 27;
         #10;
@@ -290,7 +290,7 @@ module alu_tb;
 
     //SRL
     tb_op_in = 4'b0101;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom() >> 27;
         #10;
@@ -317,7 +317,7 @@ module alu_tb;
     
     //SRA
     tb_op_in = 4'b1101;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom() >> 27;
         #10;
@@ -344,7 +344,7 @@ module alu_tb;
 
     //SLU
     tb_op_in = 4'b0010;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
@@ -371,7 +371,7 @@ module alu_tb;
 
     //SLTU
     tb_op_in = 4'b0011;
-    repeat (100000) begin
+    repeat (1000000) begin
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;

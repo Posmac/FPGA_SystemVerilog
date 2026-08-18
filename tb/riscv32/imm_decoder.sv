@@ -38,7 +38,7 @@ module imm_decoder_tb;
 	$display("---------------------------------------");
     
     //I: 0010011 (alu imm)
-    repeat (100000) begin
+    repeat (1000000) begin
         instr_in = '0;
         expected = $signed(int'($urandom));
         expected = $signed(expected) >>> 20;
@@ -63,7 +63,7 @@ module imm_decoder_tb;
     //I: 0000011 (load)
     //I: 1100111 (jump + load)
     //I: 1110011 (call/break)
-    repeat (100000) begin
+    repeat (1000000) begin
         instr_in = '0;
         expected = $signed(int'($urandom));
         expected = $signed(expected) >>> 20;
@@ -86,7 +86,7 @@ module imm_decoder_tb;
 	$display("---------------------------------------");
     
     //S: 0100011 (store)
-    repeat (100000) begin
+    repeat (1000000) begin
         instr_in = '0;
         expected = $signed(int'($urandom));
         expected = $signed(expected) >>> 20;
@@ -112,7 +112,7 @@ module imm_decoder_tb;
 
     //B: 1100011 (branch)
     // assign imm_b = { {20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0 };
-    repeat (100000) begin
+    repeat (1000000) begin
         instr_in = '0;
         expected = int'($urandom());
         expected = $signed(expected) >> 19;
@@ -146,7 +146,7 @@ module imm_decoder_tb;
 
     //J: 1101111 (jump)
     // assign imm_j = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
-    repeat (100000) begin
+    repeat (1000000) begin
         instr_in = '0;
         expected = int'($urandom());
         expected = $signed(expected) >> 11;
@@ -176,7 +176,7 @@ module imm_decoder_tb;
     //U: 0110111 (load upper)
     //U: 0010111 (add upper imm)
     // assign imm_u = { instr[31:12], 12'b0 };
-    repeat (100000) begin
+    repeat (1000000) begin
         instr_in = '0;
         expected = int'($urandom());
         expected = $signed(expected);
