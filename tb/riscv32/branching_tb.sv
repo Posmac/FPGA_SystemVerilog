@@ -267,6 +267,70 @@ module branching_tb;
     $display("Branching (BGEU) Success");
 	$display("---------------------------------------");
 
+    //others
+    $display("---------------------------------------");
+    $display("Branching (JAL) Success");
+	$display("---------------------------------------");
+
+    // J and Link 
+    // rd = PC+4; PC += imm
+    // 7'b1101111: begin
+    // pc_write = 1'b1;
+    // pc_next = pc + imm;
+    repeat (1000000) begin
+        pc  = $urandom();
+        rs1 = $signed(int'($urandom));
+        rs2 = $signed(int'($urandom));
+
+        instruction = '0;
+        instruction[6:0] = 7'b1101111;
+
+        imm = $signed(int'($urandom_range(-4096, 4096)));
+        slt  = ($signed(rs1) < $signed(rs2)) ? 1 : 0;
+        sltu = (rs1 < rs2) ? 1 : 0;
+
+        expected_pc_next = pc + imm;
+        expected_pc_write = 1'b1; 
+        #10;
+        check_result("JAL TEST");
+    end
+
+    $display("---------------------------------------");
+    $display("Branching (JAL) Success");
+	$display("---------------------------------------");
+
+
+    $display("---------------------------------------");
+    $display("Branching (JALR) Success");
+	$display("---------------------------------------");
+
+    //J and Link reg
+    // rd = PC+4; PC = rs1 + imm
+    // 7'b1100111: begin 
+    // pc_write = 1'b1;
+    // pc_next = rs1 + imm;
+    repeat (1000000) begin
+        pc  = $urandom();
+        rs1 = $signed(int'($urandom));
+        rs2 = $signed(int'($urandom));
+
+        instruction = '0;
+        instruction[6:0] = 7'b1100111;
+
+        imm = $signed(int'($urandom_range(-4096, 4096)));
+        slt  = ($signed(rs1) < $signed(rs2)) ? 1 : 0;
+        sltu = (rs1 < rs2) ? 1 : 0;
+
+        expected_pc_next = (rs1 + imm) & ~32'd1;
+        expected_pc_write = 1'b1; 
+        #10;
+        check_result("JALR TEST");
+    end
+
+    $display("---------------------------------------");
+    $display("Branching (JALR) Success");
+	$display("---------------------------------------");
+
     $display("----------------------------------------------------------------");
     $display(" TESTING COMPLETE!");
     $display(" Total tests run: %0d", test_count);

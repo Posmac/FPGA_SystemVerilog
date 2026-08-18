@@ -72,7 +72,13 @@ module Branch_Unit(
             //rd = PC+4; PC = rs1 + imm
             7'b1100111: begin 
                 pc_write = 1'b1;
-                pc_next = rs1 + imm;
+                // The indirect jump instruction JALR (jump and link register) 
+                // uses the I-type encoding. 
+                // The target address is obtained by adding the sign-extended 12-bit I-immediate to the register rs1, 
+                // then setting the least-significant bit of the result to zero. 
+                // The address of the instruction following the jump (pc+4) is written to register rd. 
+                // Register x0 can be used as the destination if the result is not required.
+                pc_next = (rs1 + imm) & ~32'd1;
             end
 
             default: begin
