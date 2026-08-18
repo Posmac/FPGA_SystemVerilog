@@ -339,7 +339,7 @@ module alu_tb;
     $display("SRA Success");
 	$display("---------------------------------------");
     $display("---------------------------------------");
-    $display("SLU Start");
+    $display("SLT Start");
 	$display("---------------------------------------");
 
     //SLU
@@ -348,12 +348,12 @@ module alu_tb;
         tb_a_in = $urandom();
         tb_b_in = $urandom();
         #10;
-        check_result("SLU TEST");
+        check_result("SLT TEST");
         #10;
         tb_a_in = int'($urandom()); 
         tb_b_in = int'($urandom()); 
         #10;
-        check_result("SLU TEST");
+        check_result("SLT TEST");
     end
 
     // Edge cases for SLT
@@ -363,7 +363,7 @@ module alu_tb;
     tb_a_in = 32'hFFFFFFFF; tb_b_in = 32'b1; #10; check_result("SLT EDGE: -1<1");
 
     $display("---------------------------------------");
-    $display("SLU Success");
+    $display("SLT Success");
 	$display("---------------------------------------");
     $display("---------------------------------------");
     $display("SLTU Start");
