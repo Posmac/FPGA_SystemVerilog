@@ -44,15 +44,15 @@ module Control_Unit(
     assign instruction_30 = instruction[30];
 
     always_comb begin : op_selector
-        // alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
-        // alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
-        // alu_op = 4'b0000; //op: {func7[5], ..func3]
+        alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
+        alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
+        alu_op = 4'b0000; //op: {func7[5], ..func3]
 
-        // mem_read = 1'b0;  //read from data memory: 0/1
-        // mem_write = 1'b0; //write to memory
+        mem_read = 1'b0;  //read from data memory: 0/1
+        mem_write = 1'b0; //write to memory
 
-        // reg_file_write_en = 1'b0; //save to reg file or not: 0/1
-        // reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
+        reg_file_write_en = 1'b0; //save to reg file or not: 0/1
+        reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
 
         unique case (opcode)
             //R type
@@ -176,6 +176,15 @@ module Control_Unit(
                 mem_write = 1'b0;           //no mem write
             end
             default: begin
+                alu_first_src = 1'b0;   //first value for alu: 0: rs1, 1: pc
+                alu_second_src = 1'b0;   //second value for alu: 0: rs2, 1: imm
+                alu_op = 4'b0000; //op: {func7[5], ..func3]
+
+                mem_read = 1'b0;  //read from data memory: 0/1
+                mem_write = 1'b0; //write to memory
+
+                reg_file_write_en = 1'b0; //save to reg file or not: 0/1
+                reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
             end 
             endcase
         end

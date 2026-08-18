@@ -44,3 +44,4 @@ src/riscv32i/branching.sv
 tb/riscv32/alu_tb.sv
 tb/riscv32/imm_decoder_tb.sv
 tb/riscv32/branching_tb.sv
+tb/riscv32/control_unit_tb.sv
