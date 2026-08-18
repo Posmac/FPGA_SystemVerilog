@@ -34,8 +34,8 @@ module Branch_Unit(
     assign beq = rs1 == rs2; // for ex: 111 & 111 = 1
     assign bne = rs1 != rs2; //if difference between x - y != 0
 
-    assign blt = slt;//if x < y (SIGNED)
-    assign bge = !slt;//if x >= y (SIGNED)
+    assign blt = slt == 1;//if x < y (SIGNED)
+    assign bge = slt == 0;//if x >= y (SIGNED)
 
     assign bltu = sltu; //if x < y (UNSIGNED)
     assign bgeu = !sltu; //if x >= y (UNSIGNED)
