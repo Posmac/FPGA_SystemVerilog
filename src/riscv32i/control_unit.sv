@@ -87,7 +87,7 @@ module Control_Unit(
             //I type (load from memory to regfile) 
             //rd = M[rs1+imm][0:7]
             7'b0000011: begin
-                reg_file_write_en = 1'b0; //write to reg file
+                reg_file_write_en = 1'b1; //write to reg file
                 reg_file_src = 2'b01;     //write data memory out value (01)
 
                 alu_first_src = 1'b0;       //first is rs1
@@ -118,7 +118,7 @@ module Control_Unit(
 
                 alu_first_src = 1'b0;       //first is rs1
                 alu_second_src = 1'b0;     //rs1 - rs2
-                alu_op = 4'b1000;          //SUB rs1, rs2
+                alu_op = 4'b0000;          //dont care
 
                 mem_read = 1'b0;            //no mem read
                 mem_write = 1'b0;           //no mem write
