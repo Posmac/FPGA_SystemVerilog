@@ -32,13 +32,13 @@ module D_Latch(
     logic b_out_rst;
     MUX_1_Op_Multi_single in_1(
         .a_in(a_out_enabled),
-        .b_in(1'b1),
+        .b_in(1'b0),
         .op_in(rst_in),
         .a_out(a_out_rst)
     );
     MUX_1_Op_Multi_single in_2(
         .a_in(b_out_enabled),
-        .b_in(1'b0),
+        .b_in(1'b1),
         .op_in(rst_in),
         .a_out(b_out_rst)
     );

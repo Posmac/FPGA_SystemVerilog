@@ -7,6 +7,7 @@ module Decoder_5_to_32(
     output logic [ARCHITECTURE_WIDTH - 1 : 0] a_out
 );
     always_comb begin
+        a_out = '0;
         unique case (a_in)
             5'd0:  a_out[0]  = 1'b1;
             5'd1:  a_out[1]  = 1'b1;
