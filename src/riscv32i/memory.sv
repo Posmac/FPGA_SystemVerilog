@@ -1,79 +1,120 @@
-// `timescale 1ns / 1ps
+`timescale 1ns / 1ps
 
-// import constants::*;
+import constants::*;
 
-// module tb_memory #(
-//     parameter int MEM_SIZE_BYTES = 4096 // Размер памяти в байтах для теста
-// )(
-//     input  logic                          clk,
+module Memory_Unit #(
+    parameter int MEM_SIZE_BYTES = 4096,
+    parameter int NUM_WORDS      = MEM_SIZE_BYTES / 4
+)(
+    input  logic                             clk,
+    input  logic                             rst_in,
 
-//     // Порт записи (Write)
-//     input  logic                          we,
-//     input  logic [ARCHITECTURE_WIDTH-1:0] waddr,
-//     input  logic [ARCHITECTURE_WIDTH-1:0] wdata,
-//     input  logic [2:0]                    w_op,   // 0: SB, 1: SH, 2: SW
+    // Порт записи (Write)
+    input  logic                             we,
+    input  logic [ARCHITECTURE_WIDTH-1:0]    waddr,
+    input  logic [ARCHITECTURE_WIDTH-1:0]    wdata,
+    input  logic [2:0]                       w_op,   // 0: SB, 1: SH, 2: SW
 
-//     // Порт чтения (Read) — выдает данные мгновенно!
-//     input  logic [ARCHITECTURE_WIDTH-1:0] raddr,
-//     input  logic [2:0]                    r_op,   // 0: LB, 1: LH, 2: LW, 3: LBU, 4: LHU
+    // Порт чтения (Read) — синхронный (BRAM compatible)
+    input  logic [ARCHITECTURE_WIDTH-1:0]    raddr,
+    input  logic [2:0]                       r_op,   // 0: LB, 1: LH, 2: LW, 3: LBU, 4: LHU
 
-//     output logic [ARCHITECTURE_WIDTH-1:0] rdata
-// );
+    output logic [ARCHITECTURE_WIDTH-1:0]    rdata
+);
 
-//     // Память объявляется как байтовый массив — это сильно упрощает жизнь в симуляторе
-//     logic [7:0] mem [0:MEM_SIZE_BYTES-1];
+    // Память объявляем 32-битными словами — честный Block RAM
+    logic [31:0] mem [0:NUM_WORDS-1];
 
-//     // ------------------------------------------------------------------------
-//     // 1. ЗАПИСЬ (Синхронная по фронту clk)
-//     // ------------------------------------------------------------------------
-//     always_ff @(posedge clk) begin
-//         if (we) begin
-//             case (w_op)
-//                 3'd0: begin // SB (Store Byte)
-//                     mem[waddr] <= wdata[7:0];
-//                 end
-//                 3'd1: begin // SH (Store Halfword)
-//                     mem[waddr]   <= wdata[7:0];
-//                     mem[waddr+1] <= wdata[15:8];
-//                 end
-//                 3'd2: begin // SW (Store Word)
-//                     mem[waddr]   <= wdata[7:0];
-//                     mem[waddr+1] <= wdata[15:8];
-//                     mem[waddr+2] <= wdata[23:16];
-//                     mem[waddr+3] <= wdata[31:24];
-//                 end
-//                 default: ;
-//             endcase
-//         end
-//     end
+    // ------------------------------------------------------------------------
+    // 1. ЗАПИСЬ (Синхронная, с байтовыми масками)
+    // ------------------------------------------------------------------------
+    logic [$clog2(NUM_WORDS)-1:0] word_waddr;
+    logic [1:0]                   byte_offset_w;
 
-//     // ------------------------------------------------------------------------
-//     // 2. ЧТЕНИЕ (Комбинаторное — данные доступны МГНОВЕННО)
-//     // ------------------------------------------------------------------------
-//     logic [31:0] raw_word;
+    assign word_waddr    = waddr[$clog2(NUM_WORDS)+1 : 2];
+    assign byte_offset_w = waddr[1:0];
 
-//     // Собираем 32-битное слово из байтового массива
-//     assign raw_word = { mem[raddr+3], mem[raddr+2], mem[raddr+1], mem[raddr] };
+    always_ff @(posedge clk) begin
+        if (rst_in) begin
+            for (int i = 0; i < NUM_WORDS; i++) begin
+                mem[i] <= 32'h0;
+            end
+        end else if (we) begin
+            case (w_op)
+                3'd0: begin // SB (Store Byte)
+                    case (byte_offset_w)
+                        2'b00: mem[word_waddr][7:0]   <= wdata[7:0];
+                        2'b01: mem[word_waddr][15:8]  <= wdata[7:0];
+                        2'b10: mem[word_waddr][23:16] <= wdata[7:0];
+                        2'b11: mem[word_waddr][31:24] <= wdata[7:0];
+                    endcase
+                end
 
-//     always_comb begin
-//         case (r_op)
-//             3'd0: rdata = {{24{mem[raddr][7]}}, mem[raddr]};             // LB  (Знаковое расширение байта)
-//             3'd1: rdata = {{16{mem[raddr+1][7]}}, mem[raddr+1], mem[raddr]}; // LH (Знаковое расширение полуслова)
-//             3'd2: rdata = raw_word;                                       // LW  (Слово целиком)
-//             3'd3: rdata = {24'b0, mem[raddr]};                            // LBU (Беззнаковый байт)
-//             3'd4: rdata = {16'b0, mem[raddr+1], mem[raddr]};              // LHU (Беззнаковое полуслово)
-//             default: rdata = 32'b0;
-//         endcase
-//     end
+                3'd1: begin // SH (Store Halfword - выровнен по 2 байтам)
+                    if (byte_offset_w[1] == 1'b0)
+                        mem[word_waddr][15:0]  <= wdata[15:0];
+                    else
+                        mem[word_waddr][31:16] <= wdata[15:0];
+                end
 
-//     // Инициализация памяти из HEX-файла для тестов
-//     initial begin
-//         // Заполняем нулями на всякий случай
-//         for (int i = 0; i < MEM_SIZE_BYTES; i++) begin
-//             mem[i] = 8 me'h00;
-//         end
-//         // Загружаем прошивку
-//         $readmemh("program.mem", mem);
-//     end
+                3'd2: begin // SW (Store Word - выровнен по 4 байтам)
+                    mem[word_waddr] <= wdata;
+                end
 
-// endmodule
+                default: ;
+            endcase
+        end
+    end
+
+    // ------------------------------------------------------------------------
+    // 2. ЧТЕНИЕ (Синхронная выборка BRAM + декодирование)
+    // ------------------------------------------------------------------------
+    logic [$clog2(NUM_WORDS)-1:0] word_raddr;
+    assign word_raddr = raddr[$clog2(NUM_WORDS)+1 : 2];
+
+    logic [31:0] raw_word;
+    logic [1:0]  byte_offset_r_reg;
+    logic [2:0]  r_op_reg;
+
+    always_ff @(posedge clk) begin
+        if (rst_in) begin
+            raw_word          <= 32'h0;
+            byte_offset_r_reg <= 2'b00;
+            r_op_reg          <= 3'd0;
+        end else begin
+            raw_word          <= mem[word_raddr];
+            byte_offset_r_reg <= raddr[1:0];
+            r_op_reg          <= r_op;
+        end
+    end
+
+    // Выбираем байт и полуслово без WIDTHTRUNC
+    logic [31:0] shifted_word;
+    logic [7:0]  selected_byte;
+    logic [15:0] selected_halfword;
+
+    assign shifted_word      = raw_word >> (byte_offset_r_reg * 8);
+    assign selected_byte     = shifted_word[7:0];
+    assign selected_halfword = (byte_offset_r_reg[1] == 1'b0) ? raw_word[15:0] : raw_word[31:16];
+
+    // Знаковое / беззнаковое расширение
+    always_comb begin
+        case (r_op_reg)
+            3'd0: rdata = {{24{selected_byte[7]}}, selected_byte};         // LB
+            3'd1: rdata = {{16{selected_halfword[15]}}, selected_halfword}; // LH
+            3'd2: rdata = raw_word;                                         // LW
+            3'd3: rdata = {24'b0, selected_byte};                           // LBU
+            3'd4: rdata = {16'b0, selected_halfword};                       // LHU
+            default: rdata = 32'b0;
+        endcase
+    end
+
+    // Инициализация
+    initial begin
+        for (int i = 0; i < NUM_WORDS; i++) begin
+            mem[i] = 32'h0;
+        end
+        $readmemh("program.mem", mem);
+    end
+
+endmodule

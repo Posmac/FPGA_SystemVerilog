@@ -47,3 +47,4 @@ tb/riscv32/branching_tb.sv
 tb/riscv32/control_unit_tb.sv
 tb/riscv32/program_counter_tb.sv
 tb/riscv32/register_file_tb.sv
+tb/riscv32/memory_tb.sv
