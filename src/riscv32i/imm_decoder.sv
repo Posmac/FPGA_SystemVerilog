@@ -2,7 +2,7 @@
 
 import constants::*;
 
-module IMM_decoder (
+module Imm_Unit (
     input  logic [31:0] instr,
     output logic [31:0] imm_ext
 );

@@ -2,13 +2,13 @@
 
 import constants::*;
 
-module imm_decoder_tb;
+module Imm_Unit_tb;
     logic[ARCHITECTURE_WIDTH - 1: 0] instr_in;
     logic[ARCHITECTURE_WIDTH - 1: 0] imm_ext;
 
     logic[ARCHITECTURE_WIDTH - 1: 0] expected;
     
-    IMM_decoder decoder(
+    Imm_Unit decoder(
         .instr(instr_in),
         .imm_ext(imm_ext)
     );

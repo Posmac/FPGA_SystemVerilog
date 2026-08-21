@@ -7,7 +7,7 @@ import constants::*;
 // PC_SRC
 // WRITE_EN
 
-module PC_Multi_logic (
+module Program_Counter (
     input  logic                             clk,
     input  logic                             rst_in,
 

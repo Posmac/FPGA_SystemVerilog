@@ -20,7 +20,7 @@ import constants::*;
 // [ ] Использовать case вместо 16-входового MUX: заменить массивный мультиплексор MUX_4_Op на простой always_comb с оператором case(op_in), чтобы синтезатор сам построил оптимальное дерево логики.
  // [ ] Добавить Clock Gating / Mux Fine-Gating (опционально): отключать входы неиспользуемых блоков, чтобы они не щелкали транзисторами впустую на каждом такте и не жрали динамическую мощность.
 
-module ALU_32I(
+module Alu_Unit(
     input logic[ARCHITECTURE_WIDTH - 1: 0]      a_in,
     input logic[ARCHITECTURE_WIDTH - 1: 0]      b_in,
     input logic[3:0]                            op_in,

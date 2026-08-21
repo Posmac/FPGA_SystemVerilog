@@ -20,7 +20,7 @@ module program_counter_tb;
     logic [ARCHITECTURE_WIDTH-1:0] expected_pc_out;
     logic [ARCHITECTURE_WIDTH-1:0] expected_pc_plus4;
 
-    PC_Multi_logic pc(
+    Program_Counter pc(
         .rst_in(rst),
         .*
     );

@@ -14,7 +14,7 @@ module alu_tb;
     logic[ARCHITECTURE_WIDTH - 1: 0]   expected_slt;
     logic[ARCHITECTURE_WIDTH - 1: 0]   expected_sltu;
 
-    ALU_32I alu(
+    Alu_Unit alu(
         .a_in(tb_a_in),
         .b_in(tb_b_in),
         .op_in(tb_op_in),
