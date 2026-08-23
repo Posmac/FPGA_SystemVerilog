@@ -41,6 +41,7 @@ src/riscv32i/register_file.sv
 src/riscv32i/program_counter.sv
 src/riscv32i/control_unit.sv
 src/riscv32i/branching.sv
+src/riscv32i/CPU.sv
 tb/riscv32/alu_tb.sv
 tb/riscv32/imm_decoder_tb.sv
 tb/riscv32/branching_tb.sv
@@ -48,3 +49,4 @@ tb/riscv32/control_unit_tb.sv
 tb/riscv32/program_counter_tb.sv
 tb/riscv32/register_file_tb.sv
 tb/riscv32/memory_tb.sv
+tb/riscv32/CPU_tb.sv
