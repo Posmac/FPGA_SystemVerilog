@@ -19,8 +19,8 @@ module Branch_Unit(
     input logic[ARCHITECTURE_WIDTH -1: 0]   rs2,
     input logic[ARCHITECTURE_WIDTH -1: 0]   imm,
 
-    output logic[ARCHITECTURE_WIDTH - 1: 0] pc_next,
-    output logic                            pc_write
+    output logic[ARCHITECTURE_WIDTH - 1: 0] pc_jump,
+    output logic                            take_jump
 );
     logic beq; //0x0
     logic bne; //0x1 
@@ -44,8 +44,8 @@ module Branch_Unit(
     assign func3 = instruction[14:12];
 
     always_comb begin : op_selector
-        pc_write = 1'b0;
-        pc_next = pc;
+        take_jump = 1'b0;
+        pc_jump = pc;
         unique case (opcode)
             //B type (branch)
             //if(rs1 == rs2) PC += imm
@@ -58,32 +58,32 @@ module Branch_Unit(
                     || bltu == 1 && func3 == 3'd6
                     || bgeu == 1 && func3 == 3'd7
                 ) begin
-                    pc_write = 1'b1;
-                    pc_next = pc + imm; 
+                    take_jump = 1'b1;
+                    pc_jump = pc + imm; 
                 end
             end
             //J and Link 
             //rd = PC+4; PC += imm
             7'b1101111: begin
-                pc_write = 1'b1;
-                pc_next = pc + imm;
+                take_jump = 1'b1;
+                pc_jump = pc + imm;
             end
             //J and Link reg
             //rd = PC+4; PC = rs1 + imm
             7'b1100111: begin 
-                pc_write = 1'b1;
+                take_jump = 1'b1;
                 // The indirect jump instruction JALR (jump and link register) 
                 // uses the I-type encoding. 
                 // The target address is obtained by adding the sign-extended 12-bit I-immediate to the register rs1, 
                 // then setting the least-significant bit of the result to zero. 
                 // The address of the instruction following the jump (pc+4) is written to register rd. 
                 // Register x0 can be used as the destination if the result is not required.
-                pc_next = (rs1 + imm) & ~32'd1;
+                pc_jump = (rs1 + imm) & ~32'd1;
             end
 
             default: begin
-                pc_write = 1'b0;
-                pc_next = pc;
+                take_jump = 1'b0;
+                pc_jump = pc;
             end
             endcase
         end

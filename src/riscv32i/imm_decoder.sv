@@ -3,8 +3,8 @@
 import constants::*;
 
 module Imm_Unit (
-    input  logic [31:0] instr,
-    output logic [31:0] imm_ext
+    input  logic [ARCHITECTURE_WIDTH - 1: 0] instr,
+    output logic [ARCHITECTURE_WIDTH - 1: 0] imm_ext
 );
 
     //R: 0110011

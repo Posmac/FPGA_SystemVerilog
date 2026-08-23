@@ -2,42 +2,48 @@
 
 import constants::*;
 
-// CLK
-// RST_IN
-// PC_SRC
-// WRITE_EN
-
 module Program_Counter (
     input  logic                             clk,
     input  logic                             rst_in,
 
-    input  logic[ARCHITECTURE_WIDTH - 1: 0]  pc_next,   // New value from branch control unit
-    input  logic                             write_en,  // Stalling: 1 - обновляем PC, 0 - замораживаем (для будущих пайплайнов/пауз)
+    // Управление
+    input  logic                             write_en,   // 1 - обновляем PC, 0 - пауза
+    input  logic                             take_jump,  // 0 - PC+4, 1 - pc_jump
 
-    output logic [ARCHITECTURE_WIDTH - 1:0]  pc_out,
-    output logic [ARCHITECTURE_WIDTH - 1:0]  pc_plus4
+    // Входные данные
+    input  logic [ARCHITECTURE_WIDTH - 1: 0] pc_jump,    // Адрес из Branch Unit (для JAL/BEQ...)
+
+    // Выходы
+    output logic [ARCHITECTURE_WIDTH - 1: 0] pc_out,
+    output logic [ARCHITECTURE_WIDTH - 1: 0] pc_plus4
 );
-    //calculate possible new value of the PC for PC+4 and PC+IMM
-    logic[ARCHITECTURE_WIDTH - 1: 0] reg_plu4_out;
-    logic[ARCHITECTURE_WIDTH - 1: 0] reg_out;
-    FULL_ADDER_Multi_logic reg_plus4(
-        .a_in(reg_out),
-        .b_in(32'd4),
-        .c_in(1'b0),
-        .hf_out(reg_plu4_out),
-        .carry_out()
+
+    // 1. Вычисляем PC + 4
+    FULL_ADDER_Multi_logic adder_pc4 (
+        .a_in      (pc_out),
+        .b_in      (32'd4),
+        .c_in      (1'b0),
+        .hf_out    (pc_plus4),
+        .carry_out ()
     );
 
-    //save it
-    Register_multi pc_reg(
-        .clk(clk),
-        .rst_in(rst_in),
-        .load_in(write_en),
-        .d_in(pc_next),
-        .q_out(reg_out)
+    // 2. Выбираем между последовательным шагом (a_in) и прыжком (b_in)
+    logic [ARCHITECTURE_WIDTH - 1: 0] next_address;
+
+    MUX_1_Op_Multi_logic pc_mux (
+        .a_in  (pc_plus4),     // op_in = 0 -> PC + 4
+        .b_in  (pc_jump),      // op_in = 1 -> pc_jump
+        .op_in (take_jump),
+        .a_out (next_address)
     );
 
-    assign pc_out = reg_out;
-    assign pc_plus4 = reg_plu4_out;
+    // 3. Регистр PC
+    Register_multi pc_reg (
+        .clk     (clk),
+        .rst_in  (rst_in),
+        .load_in (write_en),
+        .d_in    (next_address),
+        .q_out   (pc_out)
+    );
 
 endmodule

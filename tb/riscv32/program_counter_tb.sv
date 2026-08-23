@@ -9,8 +9,9 @@ module program_counter_tb;
     logic rst;
 
     // Inputs
-    logic [ARCHITECTURE_WIDTH-1:0] pc_next;
     logic                          write_en;
+    logic                          take_jump;
+    logic [ARCHITECTURE_WIDTH-1:0] pc_jump;
 
     // Outputs
     logic [ARCHITECTURE_WIDTH-1:0] pc_out;
@@ -20,9 +21,14 @@ module program_counter_tb;
     logic [ARCHITECTURE_WIDTH-1:0] expected_pc_out;
     logic [ARCHITECTURE_WIDTH-1:0] expected_pc_plus4;
 
-    Program_Counter pc(
-        .rst_in(rst),
-        .*
+    Program_Counter pc (
+        .clk       (clk),
+        .rst_in    (rst),
+        .write_en  (write_en),
+        .take_jump (take_jump),
+        .pc_jump   (pc_jump),
+        .pc_out    (pc_out),
+        .pc_plus4  (pc_plus4)
     );
 
     int test_count  = 0;
@@ -34,11 +40,10 @@ module program_counter_tb;
     int cnt_we_0  = 0;
     int cnt_we_1  = 0;
 
-    // особенно интересно
-    int cnt_rst1_we0 = 0;
-    int cnt_rst1_we1 = 0;
     int cnt_rst0_we0 = 0;
     int cnt_rst0_we1 = 0;
+    int cnt_rst1_we0 = 0;
+    int cnt_rst1_we1 = 0;
 
     //------------------------------------------------------------
     // Helpers
@@ -61,7 +66,7 @@ module program_counter_tb;
             error_count++;
 
             $error(
-                "[%s] PC ERROR\nOUT:      pc=%0d plus4=%0d\nEXPECTED: pc=%0d plus4=%0d\nRST=%0d WEN=%0d NEXT=%0d",
+                "[%s] PC ERROR\nOUT:      pc=%0d plus4=%0d\nEXPECTED: pc=%0d plus4=%0d\nRST=%0d WEN=%0d JUMP_EN=%0d JUMP_ADDR=%0d",
                 test_name,
                 pc_out,
                 pc_plus4,
@@ -69,7 +74,8 @@ module program_counter_tb;
                 expected_pc_plus4,
                 rst,
                 write_en,
-                pc_next
+                take_jump,
+                pc_jump
             );
         end
     end
@@ -100,9 +106,10 @@ module program_counter_tb;
         // RESET TEST
         //--------------------------------------------------------
 
-        rst      = 1;
-        write_en = 1;
-        pc_next  = 32'hFFFFFFFF;
+        rst       = 1;
+        write_en  = 1;
+        take_jump = 0;
+        pc_jump   = 32'hFFFFFFFF;
 
         expected_pc_out   = 32'd0;
         expected_pc_plus4 = 32'd4;
@@ -111,28 +118,46 @@ module program_counter_tb;
         check_result("RESET");
 
         //--------------------------------------------------------
-        // WRITE TEST
+        // SEQUENTIAL STEP TEST (PC + 4)
         //--------------------------------------------------------
 
-        rst      = 0;
-        write_en = 1;
-        pc_next  = 32'h12345678;
+        rst       = 0;
+        write_en  = 1;
+        take_jump = 0;
+        pc_jump   = 32'h12345678;
 
-        expected_pc_out   = 32'h12345678;
-        expected_pc_plus4 = 32'h1234567C;
+        expected_pc_out   = 32'd4; // Предыдущий PC был 0, стал 4
+        expected_pc_plus4 = 32'd8;
 
         tick();
-        check_result("WRITE");
+        check_result("STEP_PC4");
 
         //--------------------------------------------------------
-        // HOLD TEST
+        // JUMP TEST (pc_jump)
         //--------------------------------------------------------
 
-        write_en = 0;
-        pc_next  = 32'hDEADBEEF;
+        rst       = 0;
+        write_en  = 1;
+        take_jump = 1;
+        pc_jump   = 32'h00000100;
 
-        expected_pc_out   = 32'h12345678;
-        expected_pc_plus4 = 32'h1234567C;
+        expected_pc_out   = 32'h00000100;
+        expected_pc_plus4 = 32'h00000104;
+
+        tick();
+        check_result("JUMP");
+
+        //--------------------------------------------------------
+        // HOLD TEST (write_en = 0)
+        //--------------------------------------------------------
+
+        write_en  = 0;
+        take_jump = 1;
+        pc_jump   = 32'hDEADBEEF;
+
+        // Должен удержать старое значение (0x100)
+        expected_pc_out   = 32'h00000100;
+        expected_pc_plus4 = 32'h00000104;
 
         tick();
         check_result("HOLD");
@@ -148,25 +173,33 @@ module program_counter_tb;
         repeat (1_000_000) begin
 
             logic [31:0] prev_pc;
+            logic [31:0] prev_plus4;
 
-            prev_pc = pc_out;
+            prev_pc    = pc_out;
+            prev_plus4 = pc_plus4;
 
-            rst      = (($urandom() % 100) == 5);
-            write_en = $urandom() > $urandom() ? 1'b0 : 1'b1;
+            rst       = (($urandom() % 100) == 5);
+            write_en  = ($urandom() > $urandom());
+            take_jump = ($urandom() > $urandom());
 
-            pc_next  = $urandom() % 1000;
+            pc_jump   = ($urandom() % 1000) * 4; // Выравниваем по 4 байта
 
             if (rst) begin
                 expected_pc_out   = 32'd0;
                 expected_pc_plus4 = 32'd4;
             end
             else if (write_en) begin
-                expected_pc_out   = pc_next;
-                expected_pc_plus4 = pc_next + 32'd4;
+                if (take_jump) begin
+                    expected_pc_out   = pc_jump;
+                    expected_pc_plus4 = pc_jump + 32'd4;
+                end else begin
+                    expected_pc_out   = prev_plus4;
+                    expected_pc_plus4 = prev_plus4 + 32'd4;
+                end
             end
             else begin
                 expected_pc_out   = prev_pc;
-                expected_pc_plus4 = prev_pc + 32'd4;
+                expected_pc_plus4 = prev_plus4;
             end
 
             if (rst)
@@ -199,7 +232,6 @@ module program_counter_tb;
         $display("PC TEST COMPLETE");
         $display("---------------------------------------");
 
-        $display("---------------------------------------");
         $display("COVERAGE");
         $display("---------------------------------------");
 

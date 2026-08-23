@@ -12,11 +12,11 @@ module branching_tb;
     logic[ARCHITECTURE_WIDTH - 1: 0] rs2;
     logic[ARCHITECTURE_WIDTH - 1: 0] imm;
 
-    logic[ARCHITECTURE_WIDTH - 1: 0] pc_next;
-    logic                            pc_write;
+    logic[ARCHITECTURE_WIDTH - 1: 0] pc_jump;
+    logic                            take_jump;
 
-    logic[ARCHITECTURE_WIDTH - 1: 0] expected_pc_next;
-    logic                            expected_pc_write;
+    logic[ARCHITECTURE_WIDTH - 1: 0] expected_pc_jump;
+    logic                            expected_take_jump;
 
     Branch_Unit br(
         .instruction(instruction),
@@ -26,8 +26,8 @@ module branching_tb;
         .rs1(rs1),
         .rs2(rs2),
         .imm(imm),
-        .pc_next(pc_next),
-        .pc_write(pc_write)
+        .pc_jump(pc_jump),
+        .take_jump(take_jump)
     );
 
     int error_count = 0;
@@ -35,8 +35,8 @@ module branching_tb;
     task check_result(string test_name);
         begin
             test_count++;
-            if (pc_next != expected_pc_next || pc_write != expected_pc_write) begin
-                $error("Error in Branch module for INSTR = %b, SLT = %d, SLTU = %d, RS1 = %d, RS2 = %d, IMM = %d, PC: %d. \n Wrong output PC_NEXT = %d, PC_WRITE = %b. Expected: PC_NEXT = %d, PC_WRITE = %d", instruction, slt, sltu, rs1, rs2, imm, pc, pc_next, pc_write, expected_pc_next, expected_pc_write);
+            if (pc_jump != expected_pc_jump || take_jump != expected_take_jump) begin
+                $error("Error in Branch module for INSTR = %b, SLT = %d, SLTU = %d, RS1 = %d, RS2 = %d, IMM = %d, PC: %d. \n Wrong output PC_jump = %d, take_jump = %b. Expected: PC_jump = %d, take_jump = %d", instruction, slt, sltu, rs1, rs2, imm, pc, pc_jump, take_jump, expected_pc_jump, expected_take_jump);
             end
         end
     endtask
@@ -76,11 +76,11 @@ module branching_tb;
         sltu = (rs1 < rs2) ? 1 : 0;
 
         if (rs1 == rs2) begin
-            expected_pc_next = pc + imm;
-            expected_pc_write = 1'b1; 
+            expected_pc_jump = pc + imm;
+            expected_take_jump = 1'b1; 
         end else begin 
-            expected_pc_next = pc;
-            expected_pc_write = 1'b0; 
+            expected_pc_jump = pc;
+            expected_take_jump = 1'b0; 
         end
         #10;
         check_result("BEQ TEST");
@@ -117,11 +117,11 @@ module branching_tb;
         sltu = (rs1 < rs2) ? 1 : 0;
 
         if (rs1 != rs2) begin
-            expected_pc_next = pc + imm;
-            expected_pc_write = 1'b1; 
+            expected_pc_jump = pc + imm;
+            expected_take_jump = 1'b1; 
         end else begin 
-            expected_pc_next = pc;
-            expected_pc_write = 1'b0; 
+            expected_pc_jump = pc;
+            expected_take_jump = 1'b0; 
         end
         #10;
         check_result("BNE TEST");
@@ -148,11 +148,11 @@ module branching_tb;
         sltu = (rs1 < rs2) ? 1 : 0;
 
         if ($signed(rs1) < $signed(rs2)) begin
-            expected_pc_next = pc + imm;
-            expected_pc_write = 1'b1; 
+            expected_pc_jump = pc + imm;
+            expected_take_jump = 1'b1; 
         end else begin 
-            expected_pc_next = pc;
-            expected_pc_write = 1'b0; 
+            expected_pc_jump = pc;
+            expected_take_jump = 1'b0; 
         end
         #10;
         check_result("BLT TEST");
@@ -183,11 +183,11 @@ module branching_tb;
         sltu = (rs1 < rs2) ? 1 : 0;
 
         if ($signed(rs1) >= $signed(rs2)) begin
-            expected_pc_next = pc + imm;
-            expected_pc_write = 1'b1; 
+            expected_pc_jump = pc + imm;
+            expected_take_jump = 1'b1; 
         end else begin 
-            expected_pc_next = pc;
-            expected_pc_write = 1'b0; 
+            expected_pc_jump = pc;
+            expected_take_jump = 1'b0; 
         end
         #10;
         check_result("BGE TEST");
@@ -218,11 +218,11 @@ module branching_tb;
         sltu = (rs1 < rs2) ? 1 : 0;
 
         if (rs1 < rs2) begin
-            expected_pc_next = pc + imm;
-            expected_pc_write = 1'b1; 
+            expected_pc_jump = pc + imm;
+            expected_take_jump = 1'b1; 
         end else begin 
-            expected_pc_next = pc;
-            expected_pc_write = 1'b0; 
+            expected_pc_jump = pc;
+            expected_take_jump = 1'b0; 
         end
         #10;
         check_result("BLTU TEST");
@@ -253,11 +253,11 @@ module branching_tb;
         sltu = (rs1 < rs2) ? 1 : 0;
 
         if (rs1 >= rs2) begin
-            expected_pc_next = pc + imm;
-            expected_pc_write = 1'b1; 
+            expected_pc_jump = pc + imm;
+            expected_take_jump = 1'b1; 
         end else begin 
-            expected_pc_next = pc;
-            expected_pc_write = 1'b0; 
+            expected_pc_jump = pc;
+            expected_take_jump = 1'b0; 
         end
         #10;
         check_result("BGEU TEST");
@@ -275,8 +275,8 @@ module branching_tb;
     // J and Link 
     // rd = PC+4; PC += imm
     // 7'b1101111: begin
-    // pc_write = 1'b1;
-    // pc_next = pc + imm;
+    // take_jump = 1'b1;
+    // pc_jump = pc + imm;
     repeat (1000000) begin
         pc  = $urandom();
         rs1 = $signed(int'($urandom));
@@ -289,8 +289,8 @@ module branching_tb;
         slt  = ($signed(rs1) < $signed(rs2)) ? 1 : 0;
         sltu = (rs1 < rs2) ? 1 : 0;
 
-        expected_pc_next = pc + imm;
-        expected_pc_write = 1'b1; 
+        expected_pc_jump = pc + imm;
+        expected_take_jump = 1'b1; 
         #10;
         check_result("JAL TEST");
     end
@@ -307,8 +307,8 @@ module branching_tb;
     //J and Link reg
     // rd = PC+4; PC = rs1 + imm
     // 7'b1100111: begin 
-    // pc_write = 1'b1;
-    // pc_next = rs1 + imm;
+    // take_jump = 1'b1;
+    // pc_jump = rs1 + imm;
     repeat (1000000) begin
         pc  = $urandom();
         rs1 = $signed(int'($urandom));
@@ -321,8 +321,8 @@ module branching_tb;
         slt  = ($signed(rs1) < $signed(rs2)) ? 1 : 0;
         sltu = (rs1 < rs2) ? 1 : 0;
 
-        expected_pc_next = (rs1 + imm) & ~32'd1;
-        expected_pc_write = 1'b1; 
+        expected_pc_jump = (rs1 + imm) & ~32'd1;
+        expected_take_jump = 1'b1; 
         #10;
         check_result("JALR TEST");
     end
