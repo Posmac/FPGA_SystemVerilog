@@ -66,6 +66,10 @@ module CPU_tb;
     int random_rs2_addr = 0;
     int random_rd_addr = 0;
 
+    int random_rs1_data = 0;
+    int random_rs2_data = 0;
+    int random_imm_data = 0;
+
     int error_count = 0;
     int test_count = 0;
     task check_result(string test_name);
@@ -134,11 +138,23 @@ module CPU_tb;
         );
     end
 
-    repeat (100_000) begin
+    //R-type operations test with every register (add, sub, xor, or, and, slr, sll, sla, slt, sltu)
+    repeat (1_000_000) begin
+        //generated random addresses
         random_rs1_addr = $urandom() % 32;
         random_rs2_addr = $urandom() % 32;
         random_rd_addr = $urandom() % 32;
+
+        random_rs1_data = $urandom() % 10_000;
+        random_rs2_data = $urandom() % 10_000;
     end
+
+    //I-Type operations test with every register(addi, xori, ori, andi, slri, slli, slai, slti, sltiu)
+    // repeat (1_000_000) begin
+        // random_rs1_addr = $urandom() % 32;
+        // random_rs2_addr = $urandom() % 32;
+        // random_rd_addr = $urandom() % 32;
+    // end
 
     // $display("CU: instr: %b, mem_read: %b, mem_write: %b, reg_file_src: %b, reg_file_write_en: %b, alu_op: %b, alu_first_src: %b, alu_second_src: %b", 
     //     cpu.Control_Unit.instruction,
