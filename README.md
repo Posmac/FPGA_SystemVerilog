@@ -1,5 +1,50 @@
 # FPGA RISC-V CPU + GPU
 
+//24.08.2026(21:49 pm) CPU IS ALIVE AND EXECUTED FIRST 4 INSTRUCTIONS PROGRAM!! 
+--------------------------------------
+SYSTEM TEST FOR 32 bit CPU!
+---------------------------------------
+ CPU STATUS
+CLK: 0, RST: 0
+PC=         0, PC+4=         4, INSTR=00f00093
+ALU: alu_out:         15, slt_out: 00000000000000000000000000000001, sltu_out: 00000000000000000000000000000001
+CLK: 0, RST: 0
+Memory: raddr:          4, r_op: 2, rdata: 00000001101100000000000100010011
+Reg file: X1:         15, X2:          0, X3:          0, X4:          0 
+
+
+ CPU STATUS
+CLK: 0, RST: 0
+PC=         4, PC+4=         8, INSTR=01b00113
+ALU: alu_out:         27, slt_out: 00000000000000000000000000000001, sltu_out: 00000000000000000000000000000001
+CLK: 0, RST: 0
+Memory: raddr:          8, r_op: 2, rdata: 00000000001000001000000110110011
+Reg file: X1:         15, X2:         27, X3:          0, X4:          0 
+
+
+ CPU STATUS
+CLK: 0, RST: 0
+PC=         8, PC+4=        12, INSTR=002081b3
+ALU: alu_out:         42, slt_out: 00000000000000000000000000000001, sltu_out: 00000000000000000000000000000001
+CLK: 0, RST: 0
+Memory: raddr:         12, r_op: 2, rdata: 01000000000100011000001000110011
+Reg file: X1:         15, X2:         27, X3:         42, X4:          0 
+
+
+ CPU STATUS
+CLK: 0, RST: 0
+PC=        12, PC+4=        16, INSTR=40118233
+ALU: alu_out:         27, slt_out: 00000000000000000000000000000000, sltu_out: 00000000000000000000000000000000
+CLK: 0, RST: 0
+Memory: raddr:         16, r_op: 2, rdata: 00000000000000000000000000000000
+Reg file: X1:         15, X2:         27, X3:         42, X4:         27 
+----------------------------------------------------------------
+ TESTING COMPLETE!
+ Total tests run: 0
+ 🎉 SUCCESS: All tests passed successfully!
+----------------------------------------------------------------
+
+
 ## 1. Why this project exists
 This project exists to build a custom computing platform on FPGA and go through the full path from basic logic blocks to a working CPU + GPU system.
 

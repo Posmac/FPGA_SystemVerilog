@@ -76,17 +76,21 @@ module Memory_Unit #(
     logic [1:0]  byte_offset_r_reg;
     logic [2:0]  r_op_reg;
 
-    always_ff @(posedge clk) begin
-        if (rst_in) begin
-            raw_word          <= 32'h0;
-            byte_offset_r_reg <= 2'b00;
-            r_op_reg          <= 3'd0;
-        end else begin
-            raw_word          <= mem[word_raddr];
-            byte_offset_r_reg <= raddr[1:0];
-            r_op_reg          <= r_op;
-        end
+    always_comb begin
+    // always_ff @(posedge clk) begin
+        // if (rst_in) begin
+        //     raw_word          <= 32'h0;
+        //     byte_offset_r_reg <= 2'b00;
+        //     r_op_reg          <= 3'd0;
+        // end else begin
+            
+        // end
+        raw_word          = mem[word_raddr];
+        byte_offset_r_reg = raddr[1:0];
+        r_op_reg          = r_op;
     end
+
+    // $display("Info: waddr: %b, raddr: %b, raw_word: %b", word_raddr, raddr, raw_word);
 
     // Выбираем байт и полуслово без WIDTHTRUNC
     logic [31:0] shifted_word;
@@ -109,12 +113,12 @@ module Memory_Unit #(
         endcase
     end
 
-    // Инициализация
-    initial begin
-        for (int i = 0; i < NUM_WORDS; i++) begin
-            mem[i] = 32'h0;
-        end
-        $readmemh("program.mem", mem);
-    end
+    // // Инициализация
+    // initial begin
+    //     for (int i = 0; i < NUM_WORDS; i++) begin
+    //         mem[i] = 32'h0;
+    //     end
+    //     $readmemh("program.mem", mem);
+    // end
 
 endmodule
