@@ -43,8 +43,9 @@ Reg file: X1:         15, X2:         27, X3:         42, X4:         27
  Total tests run: 0
  🎉 SUCCESS: All tests passed successfully!
 ----------------------------------------------------------------
-
 RV32I CPU Integration Status
+
+--- Instructions ---
 
 ✅ ADD
 ✅ SUB
@@ -69,7 +70,6 @@ RV32I CPU Integration Status
 
 ✅ LB
 ✅ LH
-✅ LH
 ✅ LBU
 ✅ LHU
 
@@ -77,20 +77,41 @@ RV32I CPU Integration Status
 ✅ SH 
 ✅ SW 
 
+✅ LUI
+✅ AUIPC
+
+✅ BEQ
+✅ BNE
+✅ BLT
+✅ BGE
+✅ BLTU
+✅ BGEU
+
+✅ JAL
+✅ JALR
+
 Verified through full CPU datapath:
-Fetch -> Decode -> Execute -> Writeback
+Fetch -> Decode -> Execute -> Memory -> Writeback
 
-RV32I STATUS
+--- Hardware Modules & Units ---
 
-✅ Program Counter
+✅ Program Counter (PC)
 ✅ Instruction Memory
-✅ Register File
-✅ Immediate Decoder
-✅ ALU
+✅ Data Memory (Byte/Halfword/Word masks)
+✅ Register File (32 x 32-bit, Dual-Read / Single-Write)
+✅ Immediate Decoder (I, S, B, U, J formats)
+✅ Arithmetic Logic Unit (ALU)
+✅ Branch Control Unit (Control Flow & Target Addr Calculation)
+✅ Control Unit / Decoder
+
+--- Instruction Formats / Subsystems ---
+
 ✅ R-Type Instructions
 ✅ I-Type Instructions
-✅ L-Type Instructions
-✅ S-Type Instructions
+✅ Load/Store (L/S-Type) Instructions
+✅ Upper Immediate (U-Type) Instructions
+✅ Branch (B-Type) Instructions & Loops
+✅ Jump (J-Type) Instructions & Subroutines
 
 
 ## 1. Why this project exists

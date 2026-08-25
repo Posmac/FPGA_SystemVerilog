@@ -12,7 +12,7 @@ verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module CPU_tb -Wno-UNO
 # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module d_flip_flop_tb -Wno-UNOPTFLAT -f files.f
 # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module register_multi_tb -Wno-UNOPTFLAT -f files.f
 
-clear & clear
+# clear & clear
 
 # ./obj_dir/Valu_tb
 # ./obj_dir/Vimm_decoder_tb

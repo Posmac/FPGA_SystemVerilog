@@ -40,19 +40,19 @@ module RISCV32_CPU(
     );
 
     //====BU====
-    // logic                             slt;
-    // logic                             sltu;
-
-    // logic[ARCHITECTURE_WIDTH -1: 0]   pc;
-    // logic[ARCHITECTURE_WIDTH -1: 0]   rs1;
-    // logic[ARCHITECTURE_WIDTH -1: 0]   rs2;
-    // logic[ARCHITECTURE_WIDTH -1: 0]   imm;
-
-    // logic[ARCHITECTURE_WIDTH - 1: 0] pc_next;
-    // logic                            pc_write;
-    // Branch_Unit Branch_Unit(
-    //     .*
-    // );
+    logic[ARCHITECTURE_WIDTH - 1: 0] pc_jump;
+    logic                            take_jump;
+    Branch_Unit Branch_Unit(
+        .instruction(instruction),
+        .slt(slt_out[0]),
+        .sltu(sltu_out[0]),
+        .pc(pc_out),
+        .rs1(alu_first_out),
+        .rs2(alu_second_out),
+        .imm(imm_ext),
+        .pc_jump(pc_jump),
+        .take_jump(take_jump)
+    );
 
     //====CU====
     logic                           mem_read;
@@ -103,8 +103,8 @@ module RISCV32_CPU(
     .clk       (clk),           // <---- INPUT
     .rst_in    (rst_in),        // <---- INPUT
     .write_en  (1'b1),          // <---- INPUT
-    .take_jump (1'b0),          // <---- INPUT
-    .pc_jump   (32'd0),         // <---- INPUT
+    .take_jump (take_jump),     // <---- INPUT
+    .pc_jump   (pc_jump),       // <---- INPUT
     .pc_out    (pc_out),        // ----> OUTPUT
     .pc_plus4  (pc_plus4)       // ----> OUTPUT
     );
