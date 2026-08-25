@@ -19,6 +19,6 @@ module SR_Latch(
         .a_out(r_out)
     );
 
-    assign a_out = r_out;
+    assign a_out = s_out;
 
 endmodule

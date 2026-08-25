@@ -44,6 +44,54 @@ Reg file: X1:         15, X2:         27, X3:         42, X4:         27
  🎉 SUCCESS: All tests passed successfully!
 ----------------------------------------------------------------
 
+RV32I CPU Integration Status
+
+✅ ADD
+✅ SUB
+✅ XOR
+✅ OR
+✅ AND
+✅ SLL
+✅ SRL
+✅ SRA
+✅ SLT
+✅ SLTU
+
+✅ ADDI
+✅ XORI
+✅ ORI
+✅ ANDI
+✅ SLLI
+✅ SRLI
+✅ SRAI
+✅ SLTI
+✅ SLTIU
+
+✅ LB
+✅ LH
+✅ LH
+✅ LBU
+✅ LHU
+
+✅ SB
+✅ SH 
+✅ SW 
+
+Verified through full CPU datapath:
+Fetch -> Decode -> Execute -> Writeback
+
+RV32I STATUS
+
+✅ Program Counter
+✅ Instruction Memory
+✅ Register File
+✅ Immediate Decoder
+✅ ALU
+✅ R-Type Instructions
+✅ I-Type Instructions
+✅ L-Type Instructions
+✅ S-Type Instructions
+
 
 ## 1. Why this project exists
 This project exists to build a custom computing platform on FPGA and go through the full path from basic logic blocks to a working CPU + GPU system.

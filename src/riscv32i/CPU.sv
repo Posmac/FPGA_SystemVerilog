@@ -11,20 +11,20 @@ module RISCV32_CPU(
     //====INSTR_MEMORY====
     // Memory_Unit Instruction_memory(),
     input logic [ARCHITECTURE_WIDTH-1:0]    instruction, //left for compatibility for other modules (.*)
-    output logic [ARCHITECTURE_WIDTH-1:0]    next_instruction_address
-);
+    output logic [ARCHITECTURE_WIDTH-1:0]    next_instruction_address,
+
     //====DATA_MEMORY====
     // Memory_Unit Data_memory();
     // Порт записи (Write)
-    // output  logic                             data_memory_we;
-    // output  logic [ARCHITECTURE_WIDTH-1:0]    data_memory_waddr;
-    // output  logic [ARCHITECTURE_WIDTH-1:0]    data_memory_wdata;
-    // output  logic [2:0]                       data_memory_w_op;   // 0: SB; 1: SH; 2: SW
-    // // Порт чтения (Read) — синхронный (BRAM compatible)
-    // output  logic [ARCHITECTURE_WIDTH-1:0]    data_memory_raddr;
-    // output  logic [2:0]                       data_memory_r_op;   // 0: LB, 1: LH, 2: LW, 3: LBU, 4: LHU
-    // input logic [ARCHITECTURE_WIDTH-1:0]    data_memory_rdata;
-
+    output  logic                               data_memory_we,
+    output  logic [ARCHITECTURE_WIDTH-1:0]      data_memory_waddr,
+    output  logic [ARCHITECTURE_WIDTH-1:0]      data_memory_wdata,
+    output  logic [2:0]                         data_memory_w_op,   // 0: SB, 1: SH, 2: SW
+    // Порт чтения (Read) — синхронный (BRAM compatible)
+    output  logic [ARCHITECTURE_WIDTH-1:0]      data_memory_raddr,
+    output  logic [2:0]                         data_memory_r_op,   // 0: LB, 1: LH, 2: LW, 3: LBU, 4: LHU
+    input   logic [ARCHITECTURE_WIDTH-1:0]      data_memory_rdata
+);
     //==============DEFINE ALL MODULES/==============
     //====ALU====
     logic [ARCHITECTURE_WIDTH - 1: 0]    alu_out;
@@ -56,7 +56,6 @@ module RISCV32_CPU(
 
     //====CU====
     logic                           mem_read;
-    logic                           mem_write;
     logic[1:0]                      reg_file_src;
     logic                           reg_file_write_en;
     logic[3:0]                      alu_op;
@@ -65,7 +64,7 @@ module RISCV32_CPU(
     Control_Unit Control_Unit(
         .instruction(instruction),              // <---- INPUT
         .mem_read(mem_read),                    // ----> OUTPUT
-        .mem_write(mem_write),                  // ----> OUTPUT
+        .mem_write(data_memory_we),             // ----> OUTPUT
         .reg_file_src(reg_file_src),            // ----> OUTPUT
         .reg_file_write_en(reg_file_write_en),  // ----> OUTPUT
         .alu_op(alu_op),                        // ----> OUTPUT
@@ -110,11 +109,12 @@ module RISCV32_CPU(
     .pc_plus4  (pc_plus4)       // ----> OUTPUT
     );
 
+    //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
     MUX_2_Op_Multi_logic reg_file_wdata_mux(
         .a_in(alu_out),             // <---- INPUT 
-        .b_in('0),                  // <---- INPUT
-        .c_in('0),                  // <---- INPUT
-        .d_in('0),                  // <---- INPUT
+        .b_in(data_memory_rdata),   // <---- INPUT
+        .c_in(pc_plus4),            // <---- INPUT
+        .d_in(imm_ext),             // <---- INPUT
         .op_in(reg_file_src),       // <---- INPUT
         .a_out(reg_file_wdata)      // <---- INPUT
     );
@@ -133,7 +133,22 @@ module RISCV32_CPU(
         .rdata2(reg_file_rs2)                       // ----> OUTPUT
     );
 
-    //write to output
+    // output  logic [ARCHITECTURE_WIDTH-1:0]      data_memory_waddr,
+    assign data_memory_waddr = alu_out;
+
+    // output  logic [ARCHITECTURE_WIDTH-1:0]      data_memory_wdata,
+    assign data_memory_wdata = reg_file_rs2;
+
+    // output  logic [ARCHITECTURE_WIDTH-1:0]      data_memory_raddr,
+    assign data_memory_raddr = alu_out;
+
+    // pc out
     assign next_instruction_address = pc_out;
+
+    // output  logic [2:0] data_memory_r_op,   // 0: LB, 1: LH, 2: LW, 3: LBU, 4: LHU
+    assign data_memory_r_op = instruction[14:12];
+    
+    // output  logic [2:0] data_memory_w_op,   // 0: SB, 1: SH, 2: SW
+    assign data_memory_w_op = instruction[14:12];
 
 endmodule

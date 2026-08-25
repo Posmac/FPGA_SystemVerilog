@@ -107,8 +107,8 @@ module Memory_Unit #(
             3'd0: rdata = {{24{selected_byte[7]}}, selected_byte};         // LB
             3'd1: rdata = {{16{selected_halfword[15]}}, selected_halfword}; // LH
             3'd2: rdata = raw_word;                                         // LW
-            3'd3: rdata = {24'b0, selected_byte};                           // LBU
-            3'd4: rdata = {16'b0, selected_halfword};                       // LHU
+            3'd4: rdata = {24'b0, selected_byte};                           // LBU
+            3'd5: rdata = {16'b0, selected_halfword};                       // LHU
             default: rdata = 32'b0;
         endcase
     end
