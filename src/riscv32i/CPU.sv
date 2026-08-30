@@ -75,7 +75,7 @@ module RISCV32_CPU(
     logic[ARCHITECTURE_WIDTH - 1: 0] alu_first_out;
     MUX_1_Op_Multi_logic alu_first_mux(
         .a_in(reg_file_rs1),    // <---- INPUT
-        .b_in('0),              // <---- INPUT
+        .b_in(pc_out),          // <---- INPUT
         .op_in(alu_first_src),  // <---- INPUT
         .a_out(alu_first_out)   // ----> OUTPUT
     );
@@ -100,13 +100,13 @@ module RISCV32_CPU(
     logic [ARCHITECTURE_WIDTH - 1:0]  pc_out;
     logic [ARCHITECTURE_WIDTH - 1:0]  pc_plus4;
     Program_Counter Program_Counter (
-    .clk       (clk),           // <---- INPUT
-    .rst_in    (rst_in),        // <---- INPUT
-    .write_en  (1'b1),          // <---- INPUT
-    .take_jump (take_jump),     // <---- INPUT
-    .pc_jump   (pc_jump),       // <---- INPUT
-    .pc_out    (pc_out),        // ----> OUTPUT
-    .pc_plus4  (pc_plus4)       // ----> OUTPUT
+        .clk       (clk),           // <---- INPUT
+        .rst_in    (rst_in),        // <---- INPUT
+        .write_en  (1'b1),          // <---- INPUT
+        .take_jump (take_jump),     // <---- INPUT
+        .pc_jump   (pc_jump),       // <---- INPUT
+        .pc_out    (pc_out),        // ----> OUTPUT
+        .pc_plus4  (pc_plus4)       // ----> OUTPUT
     );
 
     //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm

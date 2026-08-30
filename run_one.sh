@@ -7,7 +7,6 @@
 # # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module register_file_tb -Wno-UNOPTFLAT -f files.f
 # # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module memory_unit_tb -Wno-UNOPTFLAT -f files.f
 # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
-verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
 # verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
 # # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module sr_latch_tb -Wno-UNOPTFLAT -f files.f
 # # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module d_latch_tb -Wno-UNOPTFLAT -f files.f
@@ -32,6 +31,8 @@ verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module risc
 #!/bin/bash
 # Перекомпилируем тестбенч, если нужно (или это делается отдельно)
 # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
+
+# verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
 
 # Запускаем бинарник Verilator, передавая hex-файл из первого аргумента ($1)
 if [[ "$1" == +HEX_FILE=* ]]; then

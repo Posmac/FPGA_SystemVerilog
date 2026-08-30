@@ -48,7 +48,7 @@ module riscv_tests_tb;
         .INIT_FILE("")
     ) Data_memory (
         .clk(clk),
-        .rst_in(rst),
+        .rst_in(1'b0),
         .we(we),
         .waddr(waddr),
         .wdata(wdata),
@@ -90,6 +90,11 @@ module riscv_tests_tb;
             // (Убедитесь, что массив внутри Memory_Unit называется именно "mem")
             $readmemh(hex_file_path, Instruction_memory.mem);
             $readmemh(hex_file_path, Data_memory.mem);
+
+            // Проверяем, загрузилась ли секция .data (адрес 0x2000 -> 0x2000/4 = 0x800 слово или 0x2000 слово)
+            $display("DEBUG MEM AT 0x2000 (word index 0x800): 0x%8h", Data_memory.mem[32'h2000 / 4]);
+            $display("DEBUG MEM AT 0x2000 (word index 0x2000): 0x%8h", Data_memory.mem[32'h2000]);
+
         end else begin
             $display("ERROR: No +HEX_FILE arg provided! Exit.");
             $finish;
@@ -140,10 +145,24 @@ module riscv_tests_tb;
     // LOGGER
     always @(posedge clk) begin
         if (!rst) begin
-            // $display("T=%0t | PC=0x%h | INSTR=0x%h | X3(gp)=%0d | X10(a0)=0x%h",
-            //     $time, next_instruction_address, instruction, 
-            //     cpu.Register_File.registers_out[3], cpu.Register_File.registers_out[10]
-            // );
+            $display("T=%0t | PC=0x%8h(%d) | INSTR=0x%8h | gp(x3)=%0d | a4(x14)=0x%8h(%d) | a5(x15)=0x%8h(%d) | t2(x7)=0x%8h(%d), | sp(x2)=0x%8h(%d)",
+                $time, 
+                next_instruction_address, 
+                next_instruction_address, 
+                instruction, 
+                cpu.Register_File.registers_out[3],  // gp — номер подтеста
+                cpu.Register_File.registers_out[14], // a0 — результат работы AUIPC
+                cpu.Register_File.registers_out[14], // a0 — результат работы AUIPC
+                cpu.Register_File.registers_out[15], // a1 — результат работы AUIPC
+                cpu.Register_File.registers_out[15], // a1 — результат работы AUIPC
+                cpu.Register_File.registers_out[7],   // t2 — эталонное значение
+                cpu.Register_File.registers_out[7],  // t2 — эталонное значение
+                cpu.Register_File.registers_out[2],  // t2 — эталонное значение
+                cpu.Register_File.registers_out[2]   // t2 — эталонное значение
+            );
+            // $display("ALU: OUT: %d, src1: %d, src2: %d", cpu.alu_out, cpu.alu_first_out, cpu.alu_second_out);
+            // $display("LW_DBG | raddr=0x%8h | word_raddr=0x%8h | r_op=%0d | raw_word=0x%8h | rdata=0x%8h", 
+            //     Data_memory.raddr, Data_memory.word_raddr, Data_memory.r_op, Data_memory.raw_word, Data_memory.rdata);
         end
     end
 
