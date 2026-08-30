@@ -4,7 +4,8 @@ import constants::*;
 
 module Memory_Unit #(
     parameter int MEM_SIZE_BYTES = 4096,
-    parameter int NUM_WORDS      = MEM_SIZE_BYTES / 4
+    parameter int NUM_WORDS      = MEM_SIZE_BYTES / 4,
+    parameter string INIT_FILE = ""
 )(
     input  logic                             clk,
     input  logic                             rst_in,
@@ -37,7 +38,7 @@ module Memory_Unit #(
     always_ff @(posedge clk) begin
         if (rst_in) begin
             for (int i = 0; i < NUM_WORDS; i++) begin
-                mem[i] <= 32'h0;
+                mem[i] = 32'h0;
             end
         end else if (we) begin
             case (w_op)
@@ -113,12 +114,10 @@ module Memory_Unit #(
         endcase
     end
 
-    // // Инициализация
     // initial begin
-    //     for (int i = 0; i < NUM_WORDS; i++) begin
-    //         mem[i] = 32'h0;
+    //     if (INIT_FILE != "") begin
+    //         $readmemh(INIT_FILE, mem);
     //     end
-    //     $readmemh("program.mem", mem);
     // end
 
 endmodule

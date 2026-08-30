@@ -113,6 +113,105 @@ Fetch -> Decode -> Execute -> Memory -> Writeback
 ✅ Branch (B-Type) Instructions & Loops
 ✅ Jump (J-Type) Instructions & Subroutines
 
+Found 42 tests. Starting compliance verification...
+
+[1/42] Running rv32ui-p-add... PASSED
+[2/42] Running rv32ui-p-addi... PASSED
+[3/42] Running rv32ui-p-and... PASSED
+[4/42] Running rv32ui-p-andi... PASSED
+[5/42] Running rv32ui-p-auipc... PASSED
+[6/42] Running rv32ui-p-beq... PASSED
+[7/42] Running rv32ui-p-bge... PASSED
+[8/42] Running rv32ui-p-bgeu... PASSED
+[9/42] Running rv32ui-p-blt... PASSED
+[10/42] Running rv32ui-p-bltu... PASSED
+[11/42] Running rv32ui-p-bne... PASSED
+[12/42] Running rv32ui-p-fence_i... PASSED
+[13/42] Running rv32ui-p-jal... PASSED
+[14/42] Running rv32ui-p-jalr... PASSED
+[15/42] Running rv32ui-p-lb... PASSED
+[16/42] Running rv32ui-p-lbu... PASSED
+[17/42] Running rv32ui-p-ld_st... PASSED
+[18/42] Running rv32ui-p-lh... PASSED
+[19/42] Running rv32ui-p-lhu... PASSED
+[20/42] Running rv32ui-p-lui... PASSED
+[21/42] Running rv32ui-p-lw... PASSED
+[22/42] Running rv32ui-p-ma_data... PASSED
+[23/42] Running rv32ui-p-or... PASSED
+[24/42] Running rv32ui-p-ori... PASSED
+[25/42] Running rv32ui-p-sb... PASSED
+[26/42] Running rv32ui-p-sh... PASSED
+[27/42] Running rv32ui-p-simple... PASSED
+[28/42] Running rv32ui-p-sll... PASSED
+[29/42] Running rv32ui-p-slli... PASSED
+[30/42] Running rv32ui-p-slt... PASSED
+[31/42] Running rv32ui-p-slti... PASSED
+[32/42] Running rv32ui-p-sltiu... PASSED
+[33/42] Running rv32ui-p-sltu... PASSED
+[34/42] Running rv32ui-p-sra... PASSED
+[35/42] Running rv32ui-p-srai... PASSED
+[36/42] Running rv32ui-p-srl... PASSED
+[37/42] Running rv32ui-p-srli... PASSED
+[38/42] Running rv32ui-p-st_ld... PASSED
+[39/42] Running rv32ui-p-sub... PASSED
+[40/42] Running rv32ui-p-sw... PASSED
+[41/42] Running rv32ui-p-xor... PASSED
+[42/42] Running rv32ui-p-xori... PASSED
+
+=============================================
+           FINAL COMPLIANCE SUMMARY
+=============================================
+rv32ui-p-add              : PASSED
+rv32ui-p-addi             : PASSED
+rv32ui-p-and              : PASSED
+rv32ui-p-andi             : PASSED
+rv32ui-p-auipc            : PASSED
+rv32ui-p-beq              : PASSED
+rv32ui-p-bge              : PASSED
+rv32ui-p-bgeu             : PASSED
+rv32ui-p-blt              : PASSED
+rv32ui-p-bltu             : PASSED
+rv32ui-p-bne              : PASSED
+rv32ui-p-fence_i          : PASSED
+rv32ui-p-jal              : PASSED
+rv32ui-p-jalr             : PASSED
+rv32ui-p-lb               : PASSED
+rv32ui-p-lbu              : PASSED
+rv32ui-p-ld_st            : PASSED
+rv32ui-p-lh               : PASSED
+rv32ui-p-lhu              : PASSED
+rv32ui-p-lui              : PASSED
+rv32ui-p-lw               : PASSED
+rv32ui-p-ma_data          : PASSED
+rv32ui-p-or               : PASSED
+rv32ui-p-ori              : PASSED
+rv32ui-p-sb               : PASSED
+rv32ui-p-sh               : PASSED
+rv32ui-p-simple           : PASSED
+rv32ui-p-sll              : PASSED
+rv32ui-p-slli             : PASSED
+rv32ui-p-slt              : PASSED
+rv32ui-p-slti             : PASSED
+rv32ui-p-sltiu            : PASSED
+rv32ui-p-sltu             : PASSED
+rv32ui-p-sra              : PASSED
+rv32ui-p-srai             : PASSED
+rv32ui-p-srl              : PASSED
+rv32ui-p-srli             : PASSED
+rv32ui-p-st_ld            : PASSED
+rv32ui-p-sub              : PASSED
+rv32ui-p-sw               : PASSED
+rv32ui-p-xor              : PASSED
+rv32ui-p-xori             : PASSED
+=============================================
+TOTAL: 42/42 PASSED.
+=============================================
+
+RV32I ISA Compliance
+
+riscv-tests       ✅
+hanoy tower test  ✅
+riscv-arch-test   IN PROGRESS
 
 ## 1. Why this project exists
 This project exists to build a custom computing platform on FPGA and go through the full path from basic logic blocks to a working CPU + GPU system.

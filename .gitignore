@@ -3,3 +3,4 @@ build
 .venv
 obj_dir
 dump.vcd
+isa

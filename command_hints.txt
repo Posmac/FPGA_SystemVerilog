@@ -8,3 +8,14 @@ vvp full_32
 verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module alu_tb -Wno-UNOPTFLAT -f files.f
 
 yosys -p "read_verilog -sv $(cat files.f); hierarchy -top FULL_ADDER_Multi_logic; proc; opt; techmap; opt; write_json my_design.json" && netlistsvg my_design.json -o schema.svg && open schema.svg
+
+
+
+# Компилируем
+riscv64-unknown-elf-gcc -march=rv32i_zicsr -mabi=ilp32 -static -nostdlib -nostartfiles -ffreestanding -O2 -Wl,-Ttext=0x0 -Wl,--entry=_start towers.c -o towers.elf
+
+# Переводим в hex
+riscv64-unknown-elf-objcopy -O verilog --verilog-data-width=4 towers.elf towers.hex
+
+# Запускаем симуляцию
+./run_one.sh +HEX_FILE=towers.hex
