@@ -1,0 +1,11 @@
+# Читаем SystemVerilog (через встроенный плагин sv или yosys-slang)
+read_verilog -sv src/riscv32i/*.sv
+
+# Иерархия с указанием топ-модуля (без тестбенча!)
+hierarchy -top riscv_cpu
+
+# Базовая оптимизация и преобразование в логику
+proc; opt; fsm; opt; techmap; opt
+
+# Синтез под конкретное семейство FPGA (например, iCE40, ECP5 или Xilinx 7-series)
+synth_ice40 -top riscv_cpu

@@ -51,6 +51,7 @@ tb/riscv32/register_file_tb.sv
 tb/riscv32/memory_tb.sv
 tb/riscv32/CPU_tb.sv
 tb/riscv32/riscv-tests_tb.sv
+tb/riscv32/riscv-arch-tests_tb.sv
 
 tb/sr_latch_tb.sv
 tb/d_latch_tb.sv

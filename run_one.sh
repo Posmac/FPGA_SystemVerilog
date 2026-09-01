@@ -33,6 +33,7 @@
 # verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
 
 # verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
+# verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_arch_tests_tb -Wno-UNOPTFLAT -f files.f
 
 # Запускаем бинарник Verilator, передавая hex-файл из первого аргумента ($1)
 if [[ "$1" == +HEX_FILE=* ]]; then
@@ -41,4 +42,5 @@ else
 	hex_arg="+HEX_FILE=$1"
 fi
 
-./obj_dir/Vriscv_tests_tb "$hex_arg"
+# ./obj_dir/Vriscv_tests_tb "$hex_arg"
+./obj_dir/Vriscv_arch_tests_tb "$hex_arg"
