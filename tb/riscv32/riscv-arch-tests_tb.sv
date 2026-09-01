@@ -141,19 +141,26 @@ module riscv_arch_tests_tb;
                 dump_signature();
                 $finish;
             end
-            
             begin
-                forever @(posedge clk) begin
-                    if (!rst) begin
-                        // 0x00100073 = ebreak, 0x00000073 = ecall
-                        if (instruction == 32'h00100073 || instruction == 32'h00000073) begin
-                            $display("\n[TB] HALT instruction detected (0x%8h) at PC=0x%8h", instruction, next_instruction_address);
-                            dump_signature();
-                            $finish;
-                        end
+            forever begin
+                @(posedge clk);
+                #1;
+
+                case (Data_memory.mem[sig_end_addr >> 2])
+                    32'd1: begin
+                        $display("[TB] TEST PASSED");
+                        dump_signature();
+                        $finish;
                     end
-                end
+
+                    32'd3: begin
+                        $display("[TB] TEST FAILED");
+                        dump_signature();
+                        $finish;
+                    end
+                endcase
             end
+        end
         join
     end
 
