@@ -35,6 +35,8 @@
 # verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_tests_tb -Wno-UNOPTFLAT -f files.f
 verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module riscv_arch_tests_tb -Wno-UNOPTFLAT -f files.f
 
+yosys -p "read_verilog -sv $(cat files.f) ; synth_ecp5 -top RISCV32_CPU -json RISCV32_CPU.json"
+
 # Запускаем бинарник Verilator, передавая hex-файл из первого аргумента ($1)
 if [[ "$1" == +HEX_FILE=* ]]; then
 	hex_arg="$1"

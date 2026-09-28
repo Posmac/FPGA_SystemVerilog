@@ -38,3 +38,22 @@ riscv64-unknown-elf-nm /Users/nicolaiposmac/Work/verilog/arch_hex/I-add-00.elf |
 # 3. Перевод ELF в HEX для $readmemh в SystemVerilog
 riscv64-unknown-elf-objcopy -O verilog /Users/nicolaiposmac/Work/verilog/arch_hex/I-add-00.elf \
             /Users/nicolaiposmac/Work/verilog/arch_hex/I-add-00.hex
+
+
+# FPGA
+verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps \
+              -Wall -Wpedantic -Werror \
+              --x-assign unique --x-initial unique \
+              --top-module top_uart_tb -f uart_files.f
+
+yosys -p "read_verilog -sv blink.sv; synth_ecp5 -top blink -json blink.json"
+nextpnr-ecp5 --45k --package CABGA381 --json blink.json --lpf colorlight.lpf --textcfg blink.config
+ecppack blink.config blink.bit
+openFPGALoader -b colorlight-i9 blink.bit
+
+
+yosys -p "read_verilog -sv uart.sv uart_user.sv; synth_ecp5 -top top_uart -json top_uart.json"
+nextpnr-ecp5 --45k --package CABGA381 --json top_uart.json --lpf uart.lpf --textcfg top_uart.config
+ecppack top_uart.config top_uart.bit
+openFPGALoader -b colorlight-i9 top_uart.bit
+
