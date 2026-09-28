@@ -1,4 +1,4 @@
 src/constants.sv
-uart.sv
-uart_user.sv
-uart_tb.sv
+src/uart/uart.sv
+src/uart/uart_user.sv
+tb/uart/uart_tb.sv
