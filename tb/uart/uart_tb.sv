@@ -3,9 +3,10 @@ module top_uart_tb();
     logic       rst_n; //async reset
     logic       tx;    //physical wire to Reciever
 
-    logic        send = '1;
     int counter;
 
+    // logic tx_valid = '0;
+    // logic tx_ready;
     // uart_tx uart(
     //     .clk(clk),
     //     .rst_n(rst_n),
@@ -16,6 +17,7 @@ module top_uart_tb();
     //     .tx_ready_led()
     // );
 
+    logic        send = '1;
     uart_user uart(
         .clk(clk),
         .rst_n(rst_n),
@@ -42,13 +44,13 @@ module top_uart_tb();
         rst_n = 1'b1;
         $display("RESET RELEASED. Executing...");
     end
-
         // LOGGER
         always_ff @(posedge clk) begin
             if (rst_n) begin
                 counter <= counter + 1;
-                if (counter >= 50000) begin
+                if (counter >= 500000) begin
                     send <= ~send;
+                    // tx_valid = ~tx_valid;
                     counter <= '0;
                     // $display("Valid: %b", tx_valid);
                 end 

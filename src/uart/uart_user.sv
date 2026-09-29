@@ -34,7 +34,7 @@ module uart_user
         end else begin
             unique case (current_state)
                 IDLE: begin
-                    if (!send && tx_ready && !tx_valid) begin
+                    if (!send && tx_ready) begin
                         $display("USER: IDLE -> START");
                         current_state <= START;
                     end
@@ -42,41 +42,39 @@ module uart_user
                 START: begin
                     byte_index <= '0;
                     current_state <= DATA;
-                    tx_valid <= 1'b1;
-                    tx_data  <= MESSAGE[(MESSAGE_LEN - 1) * 8 +: 8];
+                    // tx_valid <= 1'b0;
+                    // tx_data  <= MESSAGE[(MESSAGE_LEN - 1) * 8 +: 8];
                     $display("USER: START -> DATA");
                 end
                 DATA: begin
                     if (tx_ready) begin
-                        if (32'(byte_index) == MESSAGE_LEN - 1) begin
-                            current_state <= STOP;
-                            $display("USER: state=%s tx_ready=%b valid=%b data=%c index=%0d",
-                                current_state.name(),
+                        if (tx_valid) begin
+                            $display("USER DATA: r=%b v=%b d=%c i=%0d",
                                 tx_ready,
                                 tx_valid,
                                 tx_data,
-                                byte_index);
+                                byte_index - 1);
+                        end
+
+                        if (32'(byte_index) >= MESSAGE_LEN) begin
+                            current_state <= STOP;
+                            tx_valid <= '0;
+                            $display("USER DATA -> STOP");
                         end else begin
                             byte_index <= byte_index + 1;
-                            tx_data <= MESSAGE[
-                                (MESSAGE_LEN - 1 - (32'(byte_index) + 1)) * 8 +: 8
-                            ];
-                            $display("USER: state=%s tx_ready=%b valid=%b data=%c index=%0d",
-                                current_state.name(),
-                                tx_ready,
-                                tx_valid,
-                                tx_data,
-                                byte_index);
-                        end 
+                            tx_valid <= 1'b1;
+                            tx_data <= MESSAGE[8 * (MESSAGE_LEN - 1 - 32'(byte_index)) +: 8];
+                            // tx_data <= MESSAGE[32'(byte_index) * 8 +: 8];
+                        end
                     end
                 end
                 STOP: begin
-                    // if (tx_ready) begin
+                    if (tx_ready) begin
                         byte_index <= '0;
                         tx_valid <= '0;
                         current_state <= IDLE;
-                        $display("USER: STOP -> IDLE");
-                    // end
+                        $display("USER: STOP -> IDLE \n\n");
+                    end
                 end
             endcase
         end

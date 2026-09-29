@@ -12,7 +12,6 @@ module uart_tx #
     output logic        tx,
     output logic        tx_ready_led
 );
-
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
     state_t current_state = IDLE;
 
@@ -41,8 +40,9 @@ module uart_tx #
 
             if (tx_valid && tx_ready) begin
                 shift_reg <= tx_data;
+                current_state <= IDLE;
                 tx_ready <= 1'b0;
-                $display("UART READY OFF");
+                $display("  UART: IDLE -> START");
             end
 
             // А сам автомат пускай продолжает тикать по бод-рейту:
@@ -51,7 +51,7 @@ module uart_tx #
                     IDLE: begin
                         tx <= 1'b1;
                         if (!tx_ready) begin
-                            // $display("IDLE -> START, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
+                            $display("  UART: IDLE -> START, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
                             current_state <= START;
                         end 
                     end
@@ -59,23 +59,24 @@ module uart_tx #
                         tx            <= 1'b0;
                         bit_index     <= 0;
                         current_state <= DATA;
-                        // $display("START -> DATA, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
+                        // $display("UART: START -> DATA, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
                     end
                     DATA: begin
-                        tx <= shift_reg[bit_index];
                         // $display("TX: %b, DATA: %b, INDEX: %d", shift_reg[bit_index], shift_reg, bit_index);
+                        tx <= shift_reg[bit_index];
+                        $display("  UART: DATA: D:%b(%c) TX: %b I: %d", shift_reg, shift_reg, shift_reg[bit_index], bit_index);
                         if (bit_index == 3'd7) begin
-                            $display("DATA -> STOP, D:%b(%c) TX: %b I: %d", shift_reg, shift_reg, tx, bit_index);
+                            $display("  UART: DATA -> STOP");
                             current_state <= STOP;
                             bit_index <= 0;
                         end else begin
                             bit_index <= bit_index + 1;
                         end
+
                     end
                     STOP: begin
-                        // $display("STOP -> IDLE");
+                        // $display("  UART: STOP -> IDLE");
                         tx            <= 1'b1;
-                        current_state <= IDLE;
                         tx_ready      <= 1'b1; // Освобождаем буфер строго в конце стоп-бита
                     end
                 endcase
