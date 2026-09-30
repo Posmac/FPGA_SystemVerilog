@@ -5,24 +5,34 @@ module top_uart_tb();
 
     int counter;
 
-    // logic tx_valid = '0;
+    // logic tx_valid = '1;
     // logic tx_ready;
-    // uart_tx uart(
+    // uart_tx uart_tx(
     //     .clk(clk),
     //     .rst_n(rst_n),
     //     .tx_valid(tx_valid),
-    //     .tx_data(8'b10101010),
+    //     .tx_data(8'd65),
     //     .tx_ready(tx_ready),
     //     .tx(tx),
     //     .tx_ready_led()
     // );
 
-    logic        send = '1;
+    logic send = '0;
     uart_user uart(
         .clk(clk),
         .rst_n(rst_n),
         .send(send),
         .tx(tx)
+    );
+
+    logic [7:0] rx_data;
+    logic       rx_ready;
+    uart_rx uart_rx(
+        .clk(clk),
+        .rst_n(rst_n),
+        .rx(tx),
+        .rx_data(rx_data),
+        .rx_ready(rx_ready)
     );
    
     // Генератор тактов
@@ -49,7 +59,7 @@ module top_uart_tb();
             if (rst_n) begin
                 counter <= counter + 1;
                 if (counter >= 500000) begin
-                    send <= ~send;
+                    // send <= ~send;
                     // tx_valid = ~tx_valid;
                     counter <= '0;
                     // $display("Valid: %b", tx_valid);

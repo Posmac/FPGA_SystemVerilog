@@ -5,8 +5,8 @@ module uart_user
     input   logic     send, //
     output  logic     tx   // Пин J17
 );
-    localparam int MESSAGE_LEN = 14;
-    localparam logic [8*MESSAGE_LEN-1:0] MESSAGE = "Hello Ioan!!\r\n";
+    localparam int MESSAGE_LEN = 12;
+    localparam logic [8*MESSAGE_LEN-1:0] MESSAGE = "Hello World!";
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
 
     state_t      current_state = IDLE;
@@ -35,7 +35,7 @@ module uart_user
             unique case (current_state)
                 IDLE: begin
                     if (!send && tx_ready) begin
-                        $display("USER: IDLE -> START");
+                        // $display("USER: IDLE -> START");
                         current_state <= START;
                     end
                 end
@@ -44,22 +44,22 @@ module uart_user
                     current_state <= DATA;
                     // tx_valid <= 1'b0;
                     // tx_data  <= MESSAGE[(MESSAGE_LEN - 1) * 8 +: 8];
-                    $display("USER: START -> DATA");
+                    // $display("USER: START -> DATA");
                 end
                 DATA: begin
                     if (tx_ready) begin
                         if (tx_valid) begin
-                            $display("USER DATA: r=%b v=%b d=%c i=%0d",
-                                tx_ready,
-                                tx_valid,
-                                tx_data,
-                                byte_index - 1);
+                            // $display("USER DATA: r=%b v=%b d=%c i=%0d",
+                            //     tx_ready,
+                            //     tx_valid,
+                            //     tx_data,
+                            //     byte_index - 1);
                         end
 
                         if (32'(byte_index) >= MESSAGE_LEN) begin
                             current_state <= STOP;
                             tx_valid <= '0;
-                            $display("USER DATA -> STOP");
+                            // $display("USER DATA -> STOP");
                         end else begin
                             byte_index <= byte_index + 1;
                             tx_valid <= 1'b1;
@@ -73,7 +73,7 @@ module uart_user
                         byte_index <= '0;
                         tx_valid <= '0;
                         current_state <= IDLE;
-                        $display("USER: STOP -> IDLE \n\n");
+                        // $display("USER: STOP -> IDLE \n\n");
                     end
                 end
             endcase
