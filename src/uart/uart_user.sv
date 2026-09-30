@@ -5,8 +5,8 @@ module uart_user
     input   logic     send, //
     output  logic     tx   // Пин J17
 );
-    localparam int MESSAGE_LEN = 11;
-    localparam logic [8*MESSAGE_LEN-1:0] MESSAGE = "Hello World";
+    localparam int MESSAGE_LEN = 14;
+    localparam logic [8*MESSAGE_LEN-1:0] MESSAGE = "Hello Ioan!!\r\n";
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
 
     state_t      current_state = IDLE;
