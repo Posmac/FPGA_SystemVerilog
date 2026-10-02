@@ -1,46 +1,54 @@
 module top_uart_tb();
-    logic       clk;   //system clock (our is 25Mhz);
-    logic       rst_n; //async reset
-    logic       tx;    //physical wire to Reciever
+    logic       clk;       // Быстрый системный клок
+    logic       sim_clk = 0;   // Замедленный клок для симуляции
+    logic       rst_n; 
+    logic       tx;    
+    logic       rx;    
 
     int counter;
+    int slow_counter;
 
-    // logic tx_valid = '1;
-    // logic tx_ready;
-    // uart_tx uart_tx(
-    //     .clk(clk),
-    //     .rst_n(rst_n),
-    //     .tx_valid(tx_valid),
-    //     .tx_data(8'd65),
-    //     .tx_ready(tx_ready),
-    //     .tx(tx),
-    //     .tx_ready_led()
-    // );
-
-    logic send = '0;
-    uart_user uart(
-        .clk(clk),
+    // logic[7:0]      tx_data;
+    // logic           tx_ready;
+    // logic           tx_valid = '1;
+    // logic[7:0]      rx_data;
+    // logic           rx_ready;
+    
+    // Подключаем rx к test_tx, как у тебя было в первом варианте
+    uart uart(
+        .clk(sim_clk),
         .rst_n(rst_n),
-        .send(send),
+        // .log(1),
+        .rx(test_tx), 
         .tx(tx)
+        // .tx_data(tx_data),
+        // .tx_valid(tx_valid),
+        // .tx_ready(tx_ready),
+        // .rx_data(rx_data),
+        // .rx_ready(rx_ready)
     );
 
-    logic [7:0] rx_data;
-    logic       rx_ready;
-    uart_rx uart_rx(
-        .clk(clk),
+    logic[7:0]      test_tx_data;
+    logic           test_tx_ready;
+    logic           test_tx_valid; // Убрали '1' отсюда, будем управлять в always_ff
+    logic           test_tx; 
+    
+    uart_tx uart_tx(
+        .clk(sim_clk),
         .rst_n(rst_n),
-        .rx(tx),
-        .rx_data(rx_data),
-        .rx_ready(rx_ready)
+        .log(0),
+        .tx_data(test_tx_data),
+        .tx_valid(test_tx_valid),
+        .tx_ready(test_tx_ready),
+        .tx(test_tx)
     );
-   
-    // Генератор тактов
-    always #5 clk = ~clk;
+
+    // Генератор тактов (быстрый)
+    always #1 clk = ~clk;
 
     initial begin
         $dumpfile("uart_dump.vcd");
-        $dumpvars(0, uart);
+        $dumpvars(0, top_uart_tb); // Дампим весь тестбенч
 
         $display("---------------------------------------");
         $display("Starting uart testing suite");
@@ -54,30 +62,43 @@ module top_uart_tb();
         rst_n = 1'b1;
         $display("RESET RELEASED. Executing...");
     end
-        // LOGGER
-        always_ff @(posedge clk) begin
-            if (rst_n) begin
-                counter <= counter + 1;
-                if (counter >= 500000) begin
-                    // send <= ~send;
-                    // tx_valid = ~tx_valid;
-                    counter <= '0;
-                    // $display("Valid: %b", tx_valid);
-                end 
 
-                // $display("T=%t | clk=%d | tx=%b | send_next_hello_world=%b | rst = %b \n has_data_to_sent=%b, data=%d, message_index=%d, state=%b, ready=%b",
-                //     $time,
-                //     clk,
-                //     tx,
-                //     send_next_hello_world,
-                //     rst_n,
-                //     uart.has_data_to_sent,
-                //     uart.data,
-                //     uart.message_index,
-                //     uart.data_transmission_state,
-                //     uart.tx_ready
-                // );
-            end
+    // Генератор медленного клока (Делитель частоты)
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            counter <= '0;
+            sim_clk <= 1'b0;
+        end else begin
+            counter <= counter + 1;
+            if (counter >= 500) begin
+                counter <= '0;
+                sim_clk <= ~sim_clk; // !!! ИСПРАВЛЕНО: используем <= вместо =
+            end 
         end
+    end
+
+    // Работаем на медленном клоке
+    always_ff @(posedge sim_clk) begin
+        if (rst_n) begin
+            slow_counter <= slow_counter + 1;
+            if (slow_counter <= 20000) begin
+                // Если передатчик готов и мы ещё не шлём данные
+                if (test_tx_ready && !test_tx_valid) begin
+                    test_tx_valid <= 1'b1; // Выставляем валидность
+                    test_tx_data  <= 8'($urandom_range(90, 65));
+                    $display("Sent data: %c, %d", test_tx_data, slow_counter);
+                end else if (test_tx_valid) begin
+                    // Как только передатчик защёлкнул данные (ушёл с ready), снимаем valid
+                    test_tx_valid <= 1'b0;
+                    // $display("Sent data: %c", test_tx_data);
+                end
+            end else begin
+                test_tx_valid <= 1'b0;
+            end
+           
+            // Вывод информации на каждом "медленном" такте
+            // $display("TEST: % b", test_tx);
+        end
+    end
 
 endmodule

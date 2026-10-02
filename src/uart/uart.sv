@@ -1,3 +1,61 @@
+module uart #
+(
+    parameter int CLK_FREQ = 25_000_000,
+    parameter int BAUD_RATE = 115200
+)
+(
+    input logic         clk,
+    input logic         rst_n,
+    input logic         rx,
+    output logic        tx
+);
+    logic[7:0]  rx_data;
+    logic       rx_ready;
+    
+    logic[7:0]  tx_data;
+    logic       tx_valid = 1'b1;
+    logic       tx_ready;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            tx_data  <= 8'b0;
+        end else begin
+            if (rx_ready && tx_ready && rx) begin
+                $strobe("Data: %b(%c) -> %b(%c)", rx_data, rx_data, tx_data, tx_data);
+                tx_data <= rx_data + 1;
+                tx_valid <= 1'b1;
+            end else begin
+                tx_valid <= 1'b0;
+            end
+        end
+    end
+
+    uart_tx #(
+        .CLK_FREQ(CLK_FREQ),
+        .BAUD_RATE(BAUD_RATE)
+    ) uart_tx (
+        .clk(clk),
+        .rst_n(rst_n),
+        .log(1'b0),
+        .tx_data(tx_data),
+        .tx_valid(tx_valid),
+        .tx_ready(tx_ready),
+        .tx(tx)
+    );
+ 
+    uart_rx #(
+        .CLK_FREQ(CLK_FREQ),
+        .BAUD_RATE(BAUD_RATE)
+    ) uart_rx (
+        .clk(clk),
+        .rst_n(rst_n),
+        .rx(rx),
+        .rx_data(rx_data),
+        .rx_ready(rx_ready)
+    );
+endmodule
+
+
 module uart_rx #
 (
     parameter int CLK_FREQ = 25_000_000,
@@ -7,7 +65,6 @@ module uart_rx #
     input logic clk,
     input logic rst_n,
     input logic rx,
-    // input logic rx_valid,
     
     output logic[7:0] rx_data,
     output logic rx_ready
@@ -42,6 +99,7 @@ module uart_rx #
                     IDLE: begin
                         if (rx == 1'b1) begin
                             current_state <= START;
+                            rx_ready <= 1'b0;
                             // $display("IDLE -> START");
                         end
                     end
@@ -64,11 +122,12 @@ module uart_rx #
                         current_state <= IDLE;
                         if (rx == 1'b1) begin
                             rx_data <= data;
-                            $display("Succesfull read: %b(%c)", data, data);
+                            // $display("Succesfull read: %b(%c)", data, data);
                         end else begin
-                            $display("Failed read: %b(%c)", data, data);
+                            // $display("Failed read: %b(%c)", data, data);
                             rx_data <= 0;
                         end
+                        rx_ready <= 1'b1;
                     end
                 endcase
             end
@@ -87,10 +146,10 @@ module uart_tx #
     input logic         rst_n,
     input logic         tx_valid, //outside status
     input logic[7:0]    tx_data,
+    input logic         log,
 
     output logic        tx_ready, //internal ready status
-    output logic        tx,
-    output logic        tx_ready_led
+    output logic        tx
 );
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
     state_t current_state = IDLE;
@@ -110,7 +169,6 @@ module uart_tx #
             shift_reg     <= 0;
             tx            <= 1'b1;
             tx_ready      <= 1'b1;
-            tx_ready_led  <= 1'b1;
         end else begin
             if (bod_counter >= DIV_WIDTH'(BOD_DIVISOR - 1)) begin
                 bod_counter <= 0;
@@ -125,13 +183,14 @@ module uart_tx #
                 // $display("  UART: IDLE -> START");
             end
 
-            // А сам автомат пускай продолжает тикать по бод-рейту:
             if (bod_counter == 0) begin
                 unique case (current_state)
                     IDLE: begin
                         tx <= 1'b1;
                         if (!tx_ready) begin
-                            // $display("  UART: IDLE -> START, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
+                            if (log) begin
+                                $display("  UART: IDLE -> START, D: %b(%c), I: %d, T: %b", shift_reg, shift_reg, bit_index, tx);
+                            end
                             current_state <= START;
                         end 
                     end
@@ -139,14 +198,20 @@ module uart_tx #
                         tx            <= 1'b0;
                         bit_index     <= 0;
                         current_state <= DATA;
-                        // $display("UART: START -> DATA, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
+                        if (log) begin
+                            $display("UART: START -> DATA, D: %b, I: %d, T: %b", shift_reg, bit_index, tx);
+                        end
                     end
                     DATA: begin
                         // $display("TX: %b, DATA: %b, INDEX: %d", shift_reg[bit_index], shift_reg, bit_index);
                         tx <= shift_reg[bit_index];
-                        // $display("  UART: DATA: D:%b(%c) TX: %b I: %d", shift_reg, shift_reg, shift_reg[bit_index], bit_index);
+                        if (log) begin
+                            $display("  UART: DATA: D:%b(%c) TX: %b I: %d", shift_reg, shift_reg, shift_reg[bit_index], bit_index);
+                        end
                         if (bit_index == 3'd7) begin
-                            // $display("  UART: DATA -> STOP");
+                            if (log) begin
+                                $display("  UART: DATA -> STOP");
+                            end
                             current_state <= STOP;
                             bit_index <= 0;
                         end else begin
@@ -155,7 +220,9 @@ module uart_tx #
 
                     end
                     STOP: begin
-                        // $display("  UART: STOP -> IDLE");
+                        if (log) begin
+                            $display("  UART: STOP -> IDLE");
+                        end
                         tx            <= 1'b1;
                         tx_ready      <= 1'b1; // Освобождаем буфер строго в конце стоп-бита
                     end
@@ -163,4 +230,5 @@ module uart_tx #
             end
         end
     end
+
 endmodule

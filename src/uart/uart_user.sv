@@ -13,12 +13,14 @@ module uart_user
     logic        tx_valid = '0;
     logic[7:0]   tx_data = '0;
     logic[3:0]   byte_index = '0;
+    logic log = 0;
 
     //uart internal specific shit
     logic        tx_ready;
     uart_tx uart(
         .clk(clk),
         .rst_n(rst_n),
+        .log(log),
         .tx_valid(tx_valid),
         .tx_data(tx_data),
         .tx_ready(tx_ready),

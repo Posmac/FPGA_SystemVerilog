@@ -46,16 +46,20 @@ verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps \
               --x-assign unique --x-initial unique \
               --top-module top_uart_tb -f uart_files.f
 
+verilator_bin --binary --main -j 0 --trace --timescale 1ns/1ps --top-module top_uart_tb -Wno-UNOPTFLAT -f uart_files.f
+
+iverilog -g2012 -o sim.out top_uart_tb.v uart.v uart_tx.v
+vvp sim.out
+
 yosys -p "read_verilog -sv blink.sv; synth_ecp5 -top blink -json blink.json"
 nextpnr-ecp5 --45k --package CABGA381 --json blink.json --lpf colorlight.lpf --textcfg blink.config
 ecppack blink.config blink.bit
 openFPGALoader -b colorlight-i9 blink.bit
 
-
-yosys -p "read_verilog -sv src/uart/uart.sv src/uart/uart_user.sv; synth_ecp5 -top uart_user -json uart_user.json"
-nextpnr-ecp5 --45k --package CABGA381 --json uart_user.json --lpf lpf/uart.lpf --textcfg uart_user.config
-ecppack uart_user.config uart_user.bit
-openFPGALoader -b colorlight-i9 uart_user.bit
+yosys -p "read_verilog -sv src/uart/uart.sv; synth_ecp5 -top uart -json uart.json"
+nextpnr-ecp5 --45k --package CABGA381 --json uart.json --lpf lpf/uart.lpf --textcfg uart.config
+ecppack uart.config uart.bit
+openFPGALoader -b colorlight-i9 uart.bit
 
 ls /dev/cu.*
 screen /dev/cu.usbmodem1402 115200
