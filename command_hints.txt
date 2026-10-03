@@ -61,6 +61,73 @@ nextpnr-ecp5 --45k --package CABGA381 --json uart.json --lpf lpf/uart.lpf --text
 ecppack uart.config uart.bit
 openFPGALoader -b colorlight-i9 uart.bit
 
+yosys -p "read_verilog -sv src/pll/pll_module_400.sv src/pll/pll_led; synth_ecp5 -top pll_led -json pll_led.json"
+nextpnr-ecp5 --45k --package CABGA381 --json pll_led.json --lpf lpf/pll.lpf --textcfg pll_led.config
+ecppack pll_led.config pll_led.bit
+openFPGALoader -b colorlight-i9 pll_led.bit
+
 ls /dev/cu.*
 screen /dev/cu.usbmodem1402 115200
 
+nextpnr-ecp5 \
+    --json design.json \
+    --textcfg design.config \
+    --gui
+
+clear & clear
+yosys -p "read_verilog -sv src/pll/pll_module_400.sv src/pll/pll_led.sv; synth_ecp5 -top pll_led -json pll_led.json"
+nextpnr-ecp5 --45k --package CABGA381 --json pll_led.json --lpf lpf/pll.lpf --textcfg pll_led.config
+ecppack pll_led.config pll_led.bit
+openFPGALoader -b colorlight-i9 pll_led.bit
+
+ecppll -n my_pll --clkin_name clk_in --clkout0_name clk_out -i 25 -o 400 --reset -f pll_module.v\n
+
+Info: Critical path report for clock '$glbnet$clk$TRELLIS_IO_IN' (posedge -> posedge):
+Info:       type curr  total name
+Info:   clk-to-Лоq  0.52  0.52 Source rst_n_LUT4_B_D_PFUMX_Z_C0_LUT4_Z_D_TRELLIS_FF_Q_2.Q
+Info:    routing  0.89  1.41 Net rst_n_LUT4_B_D_PFUMX_Z_C0_LUT4_Z_D[2] (63,2) -> (63,2)
+Info:                          Sink rst_n_LUT4_B_D_PFUMX_Z_C0_LUT4_Z.C
+Info:                          Defined in:
+Info:                               /opt/homebrew/bin/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  1.65 Source rst_n_LUT4_B_D_PFUMX_Z_C0_LUT4_Z.F
+Info:    routing  0.27  1.92 Net rst_n_LUT4_B_D_PFUMX_Z_C0[4] (63,2) -> (63,3)
+Info:                          Sink rst_n_LUT4_B_D_PFUMX_Z_BLUT_LUT4_Z.M
+Info:                          Defined in:
+Info:                               /opt/homebrew/bin/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.26  2.17 Source rst_n_LUT4_B_D_PFUMX_Z_BLUT_LUT4_Z.OFX
+Info:    routing  0.94  3.11 Net rst_n_LUT4_B_C[2] (63,3) -> (60,2)
+Info:                          Sink rst_n_LUT4_B.D
+Info:                          Defined in:
+Info:                               /opt/homebrew/bin/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  3.35 Source rst_n_LUT4_B.F
+Info:    routing  0.61  3.95 Net uart_rx.rx_data_TRELLIS_FF_Q_LSR (60,2) -> (61,2)
+Info:                          Sink uart_rx.rx_data_TRELLIS_FF_Q_7.LSR
+Info:      setup  0.42  4.38 Source uart_rx.rx_data_TRELLIS_FF_Q_7.LSR
+Info: 1.68 ns logic, 2.70 ns routing
+
+Info: Critical path report for cross-domain path '<async>' -> 'posedge $glbnet$clk$TRELLIS_IO_IN':
+Info:       type curr  total name
+Info:     source  0.00  0.00 Source rx$tr_io.O
+Info:    routing  1.93  1.93 Net rx$TRELLIS_IO_IN (58,0) -> (60,2)
+Info:                          Sink rst_n_LUT4_B.A
+Info:                          Defined in:
+Info:                               src/uart/uart.sv:67.17-67.19
+Info:      logic  0.24  2.16 Source rst_n_LUT4_B.F
+Info:    routing  0.61  2.77 Net uart_rx.rx_data_TRELLIS_FF_Q_LSR (60,2) -> (61,2)
+Info:                          Sink uart_rx.rx_data_TRELLIS_FF_Q_7.LSR
+Info:      setup  0.42  3.19 Source uart_rx.rx_data_TRELLIS_FF_Q_7.LSR
+Info: 0.66 ns logic, 2.54 ns routing
+
+Info: Critical path report for cross-domain path 'posedge $glbnet$clk$TRELLIS_IO_IN' -> '<async>':
+Info:       type curr  total name
+Info:   clk-to-q  0.52  0.52 Source uart_tx.tx_TRELLIS_FF_Q.Q
+Info:    routing  1.20  1.73 Net tx$TRELLIS_IO_OUT (56,2) -> (56,0)
+Info:                          Sink tx$tr_io.I
+Info:                          Defined in:
+Info:                               src/uart/uart.sv:152.25-152.27
+Info: 0.52 ns logic, 1.20 ns routing
+
+Info: Max frequency for clock '$glbnet$clk$TRELLIS_IO_IN': 228.47 MHz (PASS at 12.00 MHz)
+
+Info: Max delay <async>                           -> posedge $glbnet$clk$TRELLIS_IO_IN: 3.19 ns
+Info: Max delay posedge $glbnet$clk$TRELLIS_IO_IN -> <async>                          : 1.73 ns
