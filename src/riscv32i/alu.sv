@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 // R-types     f3 (3b)    f7 (7b)               4bits opcode {f7[5], f3}   in_num
 // add         [000]      0[0]0_0000             0_000 (in_0)               in_0
 // sub         [000]      0[1]0_0000             1_000 (in_8)               in_8
@@ -18,7 +18,23 @@ import constants::*;
 // [ ] Схлопнуть SLT и SLTU в вычитатель: получать результат сравнения напрямую из флагов знака и переноса модуля SUB (без отдельной схемы).
 // [ ] Унифицировать сдвигатели (SLL, SRL, SRA): объединить их в один Barrel Shifter с управлением fill_bit (0 или a_in[31]) и входами/выходами через реверс битов {<<{}}.
 // [ ] Использовать case вместо 16-входового MUX: заменить массивный мультиплексор MUX_4_Op на простой always_comb с оператором case(op_in), чтобы синтезатор сам построил оптимальное дерево логики.
- // [ ] Добавить Clock Gating / Mux Fine-Gating (опционально): отключать входы неиспользуемых блоков, чтобы они не щелкали транзисторами впустую на каждом такте и не жрали динамическую мощность.
+// [ ] Добавить Clock Gating / Mux Fine-Gating (опционально): отключать входы неиспользуемых блоков, чтобы они не щелкали транзисторами впустую на каждом такте и не жрали динамическую мощность.
+
+//for future
+// package alu_instruction_types;
+  // typedef enum logic[3:0] {
+  //   ADD,
+  //   SUB,
+  //   XOR,
+  //   OR,
+  //   AND,
+  //   SLL,
+  //   SRL,
+  //   SRA,
+  //   SLT,
+  //   SLTU
+  // } alu_instruction_t;
+// endpackage
 
 module Alu_Unit(
     input logic[ARCHITECTURE_WIDTH - 1: 0]      a_in,

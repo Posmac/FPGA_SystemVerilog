@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module branching_tb;
     logic[ARCHITECTURE_WIDTH - 1: 0] instruction;

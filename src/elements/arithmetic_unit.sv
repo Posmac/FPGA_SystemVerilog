@@ -5,7 +5,7 @@
 // 1	1	X - 1
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module AU_Multi_logic(
     input logic[ARCHITECTURE_WIDTH - 1: 0]  a_in,

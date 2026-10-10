@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 // reg_file_src = 2'b00; //what value to save into regfile: 0: ALU, 1: Mem, 2: Pc + 4, 3: Imm
 

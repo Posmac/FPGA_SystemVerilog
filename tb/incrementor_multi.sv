@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module INCREMENTOR_Multi_logic_tb;
 

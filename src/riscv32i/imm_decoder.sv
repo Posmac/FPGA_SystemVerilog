@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module Imm_Unit (
     input  logic [ARCHITECTURE_WIDTH - 1: 0] instr,

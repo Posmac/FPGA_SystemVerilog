@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 // beq Branch == B 1100011 0x0 if(rs1 == rs2) PC += imm
 // bne Branch != B 1100011 0x1 if(rs1 != rs2) PC += imm

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module Decoder_5_to_32(
     input  logic [4:0]  a_in,

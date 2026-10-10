@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module Memory_Unit #(
     parameter int MEM_SIZE_BYTES = 65536,

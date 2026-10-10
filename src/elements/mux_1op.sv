@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-import constants::*;
+import architecture_types::*;
 
 module MUX_1_Op_Multi_logic(
     input logic[ARCHITECTURE_WIDTH - 1: 0]  a_in,

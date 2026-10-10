@@ -1,9 +1,9 @@
 module uart_user
 (
-    input   logic     clk, // Пин P3
-    input   logic     rst_n, //async reset
-    input   logic     send, //
-    output  logic     tx   // Пин J17
+    input   logic     clk,
+    input   logic     rst_n,
+    input   logic     send,
+    output  logic     tx
 );
     localparam int MESSAGE_LEN = 12;
     localparam logic [8*MESSAGE_LEN-1:0] MESSAGE = "Hello World!";

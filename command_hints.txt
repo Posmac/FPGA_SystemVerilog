@@ -82,6 +82,8 @@ openFPGALoader -b colorlight-i9 pll_led.bit
 
 ecppll -n my_pll --clkin_name clk_in --clkout0_name clk_out -i 25 -o 400 --reset -f pll_module.v\n
 
+verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module alu_fpga_tb -Wno-UNOPTFLAT -f riscv_files.f
+
 Info: Critical path report for clock '$glbnet$clk$TRELLIS_IO_IN' (posedge -> posedge):
 Info:       type curr  total name
 Info:   clk-to-Лоq  0.52  0.52 Source rst_n_LUT4_B_D_PFUMX_Z_C0_LUT4_Z_D_TRELLIS_FF_Q_2.Q

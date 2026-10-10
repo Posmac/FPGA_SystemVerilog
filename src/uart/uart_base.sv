@@ -1,80 +1,18 @@
-module uart #
-(
-    parameter int CLK_FREQ = 25_000_000,
-    parameter int BAUD_RATE = 115200
-)
-(
-    input logic         clk,
-    input logic         rst_n,
-    input logic         rx,
-    output logic        tx
-);
-    logic[7:0]  rx_data;
-    logic       rx_ready;
-    
-    logic[7:0]  tx_data;
-    logic       tx_valid = 1'b1;
-    logic       tx_ready;
+import ecp_types::*;
+import uart_types::*;
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            tx_data  <= 8'b0;
-        end else begin
-            if (rx_ready && tx_ready && rx) begin
-                $strobe("Data: %b(%c) -> %b(%c)", rx_data, rx_data, tx_data, tx_data);
-                tx_data <= rx_data + 1;
-                tx_valid <= 1'b1;
-            end else begin
-                tx_valid <= 1'b0;
-            end
-        end
-    end
-
-    uart_tx #(
-        .CLK_FREQ(CLK_FREQ),
-        .BAUD_RATE(BAUD_RATE)
-    ) uart_tx (
-        .clk(clk),
-        .rst_n(rst_n),
-        .log(1'b0),
-        .tx_data(tx_data),
-        .tx_valid(tx_valid),
-        .tx_ready(tx_ready),
-        .tx(tx)
-    );
- 
-    uart_rx #(
-        .CLK_FREQ(CLK_FREQ),
-        .BAUD_RATE(BAUD_RATE)
-    ) uart_rx (
-        .clk(clk),
-        .rst_n(rst_n),
-        .rx(rx),
-        .rx_data(rx_data),
-        .rx_ready(rx_ready)
-    );
-endmodule
-
-
-module uart_rx #
-(
-    parameter int CLK_FREQ = 25_000_000,
-    parameter int BAUD_RATE = 115200
-)
+module uart_rx 
 (
     input logic clk,
     input logic rst_n,
     input logic rx,
     
     output logic[7:0] rx_data,
-    output logic rx_ready
+    output logic rx_ready,
+    output logic rx_done
 );
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
     state_t current_state = IDLE;
-
-    localparam int BOD_DIVISOR = CLK_FREQ / BAUD_RATE;
-    localparam int BOD_HALF_DIVISOR = BOD_DIVISOR / 2;
-    localparam int DIV_WIDTH = $clog2(BOD_DIVISOR);
 
     logic [DIV_WIDTH - 1: 0]    bod_counter = 0;
     logic [2:0]                 bit_index = 0;
@@ -87,11 +25,16 @@ module uart_rx #
             bit_index <= 0;
             data <= 0;
             rx_ready <= 1'b1;
+            rx_done <= 1'b0;
         end else begin
             if (bod_counter >= DIV_WIDTH'(BOD_DIVISOR - 1)) begin
                 bod_counter <= 0;
             end else begin
                 bod_counter <= bod_counter + 1;
+            end
+
+            if (rx_done) begin
+                rx_done <= 1'b0;
             end
 
             if (32'(bod_counter) == BOD_HALF_DIVISOR) begin
@@ -122,6 +65,7 @@ module uart_rx #
                         current_state <= IDLE;
                         if (rx == 1'b1) begin
                             rx_data <= data;
+                            rx_done <= 1'b1;
                             // $display("Succesfull read: %b(%c)", data, data);
                         end else begin
                             // $display("Failed read: %b(%c)", data, data);
@@ -136,11 +80,7 @@ module uart_rx #
 
 endmodule
 
-module uart_tx #
-(
-    parameter int CLK_FREQ = 25_000_000,
-    parameter int BAUD_RATE = 115200
-)
+module uart_tx
 (
     input logic         clk,
     input logic         rst_n,
@@ -153,10 +93,7 @@ module uart_tx #
 );
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
     state_t current_state = IDLE;
-
-    localparam int BOD_DIVISOR = CLK_FREQ / BAUD_RATE;
-    localparam int DIV_WIDTH = $clog2(BOD_DIVISOR);
-    
+ 
     logic [DIV_WIDTH - 1: 0] bod_counter = 0;
     logic [2:0]              bit_index = 0;
     logic [7:0]              shift_reg = 0;
