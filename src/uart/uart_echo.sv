@@ -2,6 +2,10 @@ import ecp_types::*;
 import uart_types::*;
 
 module uart_echo
+#(
+    parameter int RX_BAUD_RATE = DEFAULT_BAUD_RATE,
+    parameter int TX_BAUD_RATE = DEFAULT_BAUD_RATE
+)
 (
     input logic         clk,
     input logic         rst_n,
@@ -30,7 +34,7 @@ module uart_echo
         end
     end
 
-    uart_tx uart_tx (
+    uart_tx#(BAUD_RATE(TX_BAUD_RATE)) uart_tx (
         .clk(clk),
         .rst_n(rst_n),
         .log(1'b0),
@@ -40,7 +44,7 @@ module uart_echo
         .tx(tx)
     );
  
-    uart_rx uart_rx (
+    uart_rx#(BAUD_RATE(RX_BAUD_RATE)) uart_rx (
         .clk(clk),
         .rst_n(rst_n),
         .rx(rx),

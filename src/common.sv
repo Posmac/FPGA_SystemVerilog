@@ -26,18 +26,24 @@ module common(
     input   uart_input_struct_t  in,
     output  uart_output_struct_t out
 );
-    uart_cpu_debug uart(
-        .clk    (in.clk),
-        .rst_n  (in.rst_n),
-        .rx     (in.rx),
-        .tx     (out.tx)
+    logic[7:0]  rx_data;
+    logic       rx_ready;
+    logic       rx_done;
+
+    uart_rx #(.BAUD_RATE(BOD_115200)) uart_rx (
+        .clk(in.clk),
+        .rst_n(in.rst_n),
+        .rx(in.rx),
+        .rx_data(rx_data),
+        .rx_ready(rx_ready),
+        .rx_done(rx_done)
     );
 
     packet_recv_input_struct_t          packet_recv_in;
     assign packet_recv_in.clk =         in.clk;
     assign packet_recv_in.rst_n =       in.rst_n;
-    assign packet_recv_in.can_read =    uart.rx_done;
-    assign packet_recv_in.data =        uart.rx_data;
+    assign packet_recv_in.can_read =    uart_rx.rx_done;
+    assign packet_recv_in.data =        uart_rx.rx_data;
 
     packet_recv_output_struct_t         packet_recv_out;
  
@@ -85,11 +91,13 @@ module common(
         .sltu_out   (sltu_out)
     );
 
-    logic   response_prepared;
+    logic               response_prepared;
+    response_packet_t   response;
+
     always_ff @(posedge in.clk or negedge in.rst_n) begin
         if (!in.rst_n) begin
         end begin
-            if(response_prepared) begin
+            if(response_sender_out.was_sent) begin
                 response_prepared <= 1'b0;
             end
 
@@ -101,37 +109,87 @@ module common(
                     end
                     command_types::CMD_ALU_EXEC: begin
                         response_prepared <= 1'b1;
-                        // $display("ALU Result: %d", a_out);
+                        response.len      <= 8'd16; // Полезная длина пакета
+
+                        // 1. Полностью очищаем весь 32-байтный буфер
+                        response.buffer   <= '0;
+
+                        // 2. Заполняем буфер линейно (слева направо, от 0 до 15)
+                        // Байты 0..2: Заголовок пакета
+                        response.buffer[0]  <= command_types::CMD_ALU_EXEC;
+                        response.buffer[1]  <= 8'd16;
+                        response.buffer[2]  <= 8'h00; // Статус (OK)
+
+                        // // Байты 3..6: Вход А (Big-Endian — старший байт улетит первым)
+                        response.buffer[3]  <= commands_dispatcher_out.alu_packet.a_in[31:24];
+                        response.buffer[4]  <= commands_dispatcher_out.alu_packet.a_in[23:16];
+                        response.buffer[5]  <= commands_dispatcher_out.alu_packet.a_in[15:8];
+                        response.buffer[6]  <= commands_dispatcher_out.alu_packet.a_in[7:0];
+
+                        // // Байты 7..10: Вход B (Big-Endian)
+                        response.buffer[7]  <= commands_dispatcher_out.alu_packet.b_in[31:24];
+                        response.buffer[8]  <= commands_dispatcher_out.alu_packet.b_in[23:16];
+                        response.buffer[9]  <= commands_dispatcher_out.alu_packet.b_in[15:8];
+                        response.buffer[10] <= commands_dispatcher_out.alu_packet.b_in[7:0];
+
+                        // // Байты 11..14: Результат вычисления ALU (Big-Endian)
+                        response.buffer[11] <= a_out[31:24];
+                        response.buffer[12] <= a_out[23:16];
+                        response.buffer[13] <= a_out[15:8];
+                        response.buffer[14] <= a_out[7:0];
+
+                        // // Байт 15: Хвост пакета / Резерв
+                        response.buffer[15] <= 8'h00;
+                        $display("Response was prepared, sending");
+                        // Байты с 16 по 31 останутся нулевыми и не отправятся,
+                        // так как отправитель выйдет из цикла по условию (byte_index >= 16)
+
+                        $display("ALU Result: %d(%b):%d(%b) = %d(%b)", 
+                                commands_dispatcher_out.alu_packet.a_in, commands_dispatcher_out.alu_packet.a_in, 
+                                commands_dispatcher_out.alu_packet.b_in, commands_dispatcher_out.alu_packet.b_in, 
+                                a_out, a_out);
                     end
                     default: begin
+                        response.len <= '0;
                     end
                 endcase
             end
         end
     end
 
-    response_sender_input_struct_t          response_sender_in;
-    assign response_sender_in.clk =         in.clk;
-    assign response_sender_in.rst_n =       in.rst_n;
-    assign response_sender_in.can_send =    commands_dispatcher_out.is_dispatched;
-    // assign response_sender_in.packet 
+    response_sender_input_struct_t                      response_sender_in;
+    assign response_sender_in.clk =                     in.clk;
+    assign response_sender_in.rst_n =                   in.rst_n;
+    assign response_sender_in.can_start_sending =       response_prepared;
+    assign response_sender_in.packet =                  response; 
 
-    response_sender_output_struct_t         response_sender_out;
-    //was_sent  
+    response_sender_output_struct_t                     response_sender_out;
+    assign out.tx = response_sender_out.tx;
 
-    response_sender response_sender(
+    response_sender#(.BAUD_RATE(BOD_921600)) response_sender(
         .in     (response_sender_in),
         .out    (response_sender_out)
     );
 
     //LOGGING
-    // always_ff @(posedge in.clk or negedge in.rst_n) begin
-    //     if (!in.rst_n) begin
-    //     end begin
-    //         if (packet_validator_out.is_valid) begin
-    //             // $strobe("Received data: CMD: %b, LEN: %b, ARG1: %b, ARG2: %b", recv.incoming_packet.cmd, recv.incoming_packet.len, recv.incoming_packet.arg0, recv.incoming_packet.arg1);
-    //         end
-    //     end
-    // end
+    always_ff @(posedge in.clk or negedge in.rst_n) begin
+        if (!in.rst_n) begin
+        end begin
+            // if (response_prepared) begin
+            // end
+            if (response_sender_out.was_sent) begin
+                $display("=== [TX PACKET SENT] ===");
+                $display("Type/Cmd: 0x%02h", response.buffer[0]);
+                $display("Length:   %0d bytes", response.len);
+                // $display("Buffer: %b", response.buffer);
+                $write("Raw Data: ");
+                for (int i = 0; i < response.len; i++) begin
+                    $write("%02h ", response.buffer[i]);
+                end
+                $display("\n========================\n");
+            end
+
+        end
+    end
 
 endmodule

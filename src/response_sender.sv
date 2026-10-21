@@ -2,83 +2,117 @@
 
 import architecture_types::*;
 import uart_types::*;
-import packet_types::*;
-import packet_recv_types::*;
-import packet_validator_types::*;
-import commands_dispatcher_types::*;
+import command_types::*;
 
-typedef enum logic [1:0] { IDLE, START, DATA, STOP } response_sender_state_t;
+// package response_types;
+//   localparam int RESPONSE_BUFFER_SIZE = 32;
 
-module response_sender(
-    response_sender_input_struct_t  in,
-    response_sender_output_struct_t out
+//   typedef struct packed {
+//     logic [RESPONSE_BUFFER_SIZE - 1: 0][7:0]  buffer; 
+//     logic [7:0]                               len;
+//   } response_packet_t;
+
+//   typedef struct packed {
+//     logic               clk;
+//     logic               rst_n;
+//     logic               can_start_sending;
+//     response_packet_t   packet;
+//   } response_sender_input_struct_t;
+
+//   typedef struct packed {
+//     logic               was_sent;
+//     logic               tx;
+//   } response_sender_output_struct_t;
+
+// endpackage
+
+module response_sender #(
+    BAUD_RATE = DEFAULT_BAUD_RATE
+) (
+    input response_sender_input_struct_t    in,
+    output response_sender_output_struct_t  out
 );
-    state_t      current_state = IDLE;
-    logic        tx_valid = '0;
-    logic[7:0]   tx_data = '0;
-    logic[3:0]   byte_index = '0;
-    logic log = 0;
+    typedef enum logic [1:0] { IDLE, START, DATA, STOP } response_sender_state_t;
 
-    logic        tx_ready;
-    uart_tx uart(
-        .clk(clk),
-        .rst_n(rst_n),
+    response_sender_state_t current_state = IDLE;
+
+    logic[7:0]              tx_data = '0;
+    logic[7:0]              byte_index = '0;
+    logic                   log = 0;
+
+    logic                   tx_ready;
+    uart_tx #(.BAUD_RATE(BAUD_RATE)) uart(
+        .clk(in.clk),
+        .rst_n(in.rst_n),
         .log(log),
-        .tx_valid(tx_valid),
+        .tx_valid(out.is_in_progress),
         .tx_data(tx_data),
         .tx_ready(tx_ready),
-        .tx(tx),
-        .tx_ready_led()
+        .tx(out.tx)
     );
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always_ff @(posedge in.clk or negedge in.rst_n) begin
+        if (!in.rst_n) begin
             current_state <= IDLE;
-            tx_valid <= '0;
-            byte_index <= '0;
+            // tx_valid <= '0;
+            // byte_index <= '0;
+            out.was_sent <= '0;
+            out.is_in_progress <= '0;
         end else begin
+            if (out.was_sent) begin
+                out.was_sent <= '0;
+            end
+
             unique case (current_state)
                 IDLE: begin
-                    if (!send && tx_ready) begin
-                        // $display("USER: IDLE -> START");
+                    out.was_sent <= '0;
+                    out.is_in_progress <= '0;
+                    if (in.can_start_sending && !out.was_sent && tx_ready) begin
                         current_state <= START;
+                        byte_index <= '0;
+                        // $display("USER: IDLE -> START");
                     end
                 end
                 START: begin
-                    byte_index <= '0;
                     current_state <= DATA;
-                    // tx_valid <= 1'b0;
-                    // tx_data  <= MESSAGE[(MESSAGE_LEN - 1) * 8 +: 8];
+                    out.is_in_progress <= '1;
+                    // tx_data <= in.packet.buffer[byte_index];
+                    // byte_index <= byte_index + 1;
                     // $display("USER: START -> DATA");
                 end
                 DATA: begin
+                    // current_state <= STOP;
+                    // $display("USER DATA -> STOP");
+
                     if (tx_ready) begin
-                        if (tx_valid) begin
+                        // if (tx_valid) begin
                             // $display("USER DATA: r=%b v=%b d=%c i=%0d",
                             //     tx_ready,
                             //     tx_valid,
                             //     tx_data,
                             //     byte_index - 1);
-                        end
+                        // end
 
-                        if (32'(byte_index) >= MESSAGE_LEN) begin
+                        if (byte_index >= in.packet.len) begin
                             current_state <= STOP;
-                            tx_valid <= '0;
                             // $display("USER DATA -> STOP");
                         end else begin
                             byte_index <= byte_index + 1;
-                            tx_valid <= 1'b1;
-                            tx_data <= MESSAGE[8 * (MESSAGE_LEN - 1 - 32'(byte_index)) +: 8];
-                            // tx_data <= MESSAGE[32'(byte_index) * 8 +: 8];
+                            tx_data <= in.packet.buffer[byte_index];
+                            // tx_data <= 8'(in.packet.buffer[32'(8 * (RESPONSE_BUFFER_SIZE - 1 - 32'(byte_index))) +: 8]);
+                            // $display("DATA: %02h \n", in.packet.buffer[byte_index]);
                         end
                     end
                 end
                 STOP: begin
                     if (tx_ready) begin
                         byte_index <= '0;
-                        tx_valid <= '0;
                         current_state <= IDLE;
-                        // $display("USER: STOP -> IDLE \n\n");
+                        out.was_sent <= '1;
+                        out.is_in_progress <= '0;
+                        // out.was_sent <= '1;
+                        // out.is_in_progress <= '0;
+                        // $display("USER: STOP -> IDLE");
                     end
                 end
             endcase

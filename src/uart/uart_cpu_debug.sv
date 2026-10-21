@@ -2,19 +2,22 @@ import ecp_types::*;
 import uart_types::*;
 
 module uart_cpu_debug
+#(
+    parameter int BAUD_RATE = DEFAULT_BAUD_RATE
+)
 (
     input logic         clk,
     input logic         rst_n,
-    input logic         rx,
-    output logic        tx
+    input logic         rx
+    // output logic        tx
 );
     logic[7:0]  rx_data;
     logic       rx_ready;
     logic       rx_done;
     
-    logic[7:0]  tx_data;
-    logic       tx_valid = 1'b0;
-    logic       tx_ready;
+    // logic[7:0]  tx_data;
+    // logic       tx_valid = 1'b0;
+    // logic       tx_ready;
 
     // always_ff @(posedge clk or negedge rst_n) begin
     //     if (!rst_n) begin
@@ -43,7 +46,7 @@ module uart_cpu_debug
     //     .tx(tx)
     // );
  
-    uart_rx uart_rx (
+    uart_rx #(.BAUD_RATE(BAUD_RATE)) uart_rx (
         .clk(clk),
         .rst_n(rst_n),
         .rx(rx),

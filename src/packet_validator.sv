@@ -5,17 +5,18 @@ import uart_types::*;
 import packet_types::*;
 import packet_validator_types::*;
 
-typedef enum logic [1:0] { 
-    START,
-    CHECK,
-    SUCCESS,
-    ERROR
-} packet_validator_state_t;
-
 module packet_validator (
     input packet_validator_input_struct_t   in,
     output packet_validator_output_struct_t out
 );
+
+    typedef enum logic [1:0] { 
+        START,
+        CHECK,
+        SUCCESS,
+        ERROR
+    } packet_validator_state_t;
+
     packet_validator_state_t current_state = START;
 
     always_ff @(posedge in.clk or negedge in.rst_n) begin

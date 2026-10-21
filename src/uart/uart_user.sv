@@ -1,4 +1,7 @@
 module uart_user
+#(
+    parameter int BAUD_RATE = DEFAULT_BAUD_RATE
+)
 (
     input   logic     clk,
     input   logic     rst_n,
@@ -17,7 +20,7 @@ module uart_user
 
     //uart internal specific shit
     logic        tx_ready;
-    uart_tx uart(
+    uart_tx#(.BAUD_RATE(BAUD_RATE)) uart(
         .clk(clk),
         .rst_n(rst_n),
         .log(log),

@@ -2,6 +2,9 @@ import ecp_types::*;
 import uart_types::*;
 
 module uart_rx 
+#(
+    parameter int BAUD_RATE = DEFAULT_BAUD_RATE
+)
 (
     input logic clk,
     input logic rst_n,
@@ -13,6 +16,10 @@ module uart_rx
 );
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
     state_t current_state = IDLE;
+
+    localparam int BOD_DIVISOR = CLK_FREQ / BAUD_RATE;
+    localparam int BOD_HALF_DIVISOR = BOD_DIVISOR / 2;
+    localparam int DIV_WIDTH = $clog2(BOD_DIVISOR);
 
     logic [DIV_WIDTH - 1: 0]    bod_counter = 0;
     logic [2:0]                 bit_index = 0;
@@ -81,6 +88,9 @@ module uart_rx
 endmodule
 
 module uart_tx
+#(
+    parameter int BAUD_RATE = DEFAULT_BAUD_RATE
+)
 (
     input logic         clk,
     input logic         rst_n,
@@ -94,6 +104,10 @@ module uart_tx
     typedef enum logic [1:0] { IDLE, START, DATA, STOP } state_t;
     state_t current_state = IDLE;
  
+    localparam int BOD_DIVISOR = CLK_FREQ / BAUD_RATE;
+    localparam int BOD_HALF_DIVISOR = BOD_DIVISOR / 2;
+    localparam int DIV_WIDTH = $clog2(BOD_DIVISOR);
+    
     logic [DIV_WIDTH - 1: 0] bod_counter = 0;
     logic [2:0]              bit_index = 0;
     logic [7:0]              shift_reg = 0;
@@ -117,7 +131,7 @@ module uart_tx
                 shift_reg <= tx_data;
                 current_state <= IDLE;
                 tx_ready <= 1'b0;
-                // $display("  UART: IDLE -> START");
+                // $display("UART: IDLE -> START %02h", tx_data);
             end
 
             if (bod_counter == 0) begin

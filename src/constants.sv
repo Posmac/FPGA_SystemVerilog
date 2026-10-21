@@ -8,10 +8,17 @@ package architecture_types;
 endpackage
 
 package uart_types;
-  localparam int BAUD_RATE = 115200;
-  localparam int BOD_DIVISOR = CLK_FREQ / BAUD_RATE;
-  localparam int BOD_HALF_DIVISOR = BOD_DIVISOR / 2;
-  localparam int DIV_WIDTH = $clog2(BOD_DIVISOR);
+  localparam int DEFAULT_BAUD_RATE = 115200;
+  localparam int BOD_115200 = 115200;
+  localparam int BOD_921600 = 921600;
+  // localparam int RX_BAUD_RATE = 115200;
+  // localparam int TX_BAUD_RATE = 115200 * 8;
+  // localparam int RX_BOD_DIVISOR = CLK_FREQ / RX_BAUD_RATE;
+  // localparam int TX_BOD_DIVISOR = CLK_FREQ / TX_BAUD_RATE;
+  // localparam int RX_BOD_HALF_DIVISOR = RX_BOD_DIVISOR / 2;
+  // localparam int TX_BOD_HALF_DIVISOR = TX_BOD_DIVISOR / 2;
+  // localparam int RX_DIV_WIDTH = $clog2(RX_BOD_DIVISOR);
+  // localparam int TX_DIV_WIDTH = $clog2(TX_BOD_DIVISOR);
 
   typedef struct packed {
       logic clk;
@@ -111,19 +118,24 @@ package commands_dispatcher_types;
 endpackage
 
 package response_types;
+  localparam int RESPONSE_BUFFER_SIZE = 32;
+
   typedef struct packed {
-    logic [11:0][7:0] log_buffer; 
+    logic [RESPONSE_BUFFER_SIZE - 1: 0][7:0]  buffer; 
+    logic [7:0]                               len;
   } response_packet_t;
 
   typedef struct packed {
     logic               clk;
     logic               rst_n;
-    logic               can_send;
+    logic               can_start_sending;
     response_packet_t   packet;
   } response_sender_input_struct_t;
 
   typedef struct packed {
+    logic               is_in_progress;
     logic               was_sent;
+    logic               tx;
   } response_sender_output_struct_t;
 
 endpackage
