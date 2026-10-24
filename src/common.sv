@@ -34,6 +34,7 @@ module common(
         .clk(in.clk),
         .rst_n(in.rst_n),
         .rx(in.rx),
+        .can_receive(1'b1),
         .rx_data(rx_data),
         .rx_ready(rx_ready),
         .rx_done(rx_done)

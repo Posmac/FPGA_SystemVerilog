@@ -11,9 +11,9 @@ module uart_cpu_debug
     input logic         rx
     // output logic        tx
 );
-    logic[7:0]  rx_data;
-    logic       rx_ready;
-    logic       rx_done;
+    // logic[7:0]  rx_data;
+    // logic       rx_ready;
+    // logic       rx_done;
     
     // logic[7:0]  tx_data;
     // logic       tx_valid = 1'b0;
@@ -46,12 +46,12 @@ module uart_cpu_debug
     //     .tx(tx)
     // );
  
-    uart_rx #(.BAUD_RATE(BAUD_RATE)) uart_rx (
-        .clk(clk),
-        .rst_n(rst_n),
-        .rx(rx),
-        .rx_data(rx_data),
-        .rx_ready(rx_ready),
-        .rx_done(rx_done)
-    );
+    // uart_rx #(.BAUD_RATE(BAUD_RATE)) uart_rx (
+    //     .clk(clk),
+    //     .rst_n(rst_n),
+    //     .rx(rx),
+    //     .rx_data(rx_data),
+    //     .rx_ready(rx_ready),
+    //     .rx_done(rx_done)
+    // );
 endmodule

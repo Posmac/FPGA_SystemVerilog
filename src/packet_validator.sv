@@ -45,12 +45,12 @@ module packet_validator (
             SUCCESS: begin
                 current_state   <= START;
                 out.is_valid    <= 1'b1;
-                // $strobe("VALID");
+                $strobe("VALID");
             end
             ERROR: begin
                 current_state   <= START;
                 out.is_valid    <= 1'b0;
-                // $strobe("INVALID");
+                $strobe("INVALID");
             end
         endcase
         end

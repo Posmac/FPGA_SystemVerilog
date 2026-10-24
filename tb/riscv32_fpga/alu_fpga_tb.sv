@@ -14,6 +14,7 @@ module alu_fpga_tb();
 
     assign alu_in.rx = test_tx;
     assign alu_in.clk = sim_clk;
+    // assign alu_in.sim_clk = sim_clk;
     assign alu_in.rst_n = rst_n;
 
     common alu(
@@ -46,6 +47,7 @@ module alu_fpga_tb();
         .clk(sim_clk),
         .rst_n(rst_n),
         .rx(alu_out.tx),
+        .can_receive(alu.response_prepared),
         .rx_data(rx_data),
         .rx_ready(rx_ready),
         .rx_done(rx_done)
@@ -79,13 +81,16 @@ module alu_fpga_tb();
                 counter <= '0;
                 sim_clk <= ~sim_clk; 
             end 
+            // if (rx_done) begin
+            //     $display("RX: %b", rx_done);
+            // end
         end
     end
 
     always_ff @(posedge sim_clk) begin
         if (rst_n) begin
             slow_counter <= slow_counter + 1;
-            if (slow_counter <= 70000) begin
+            if (slow_counter >= 0) begin
                 if (test_tx_ready && !test_tx_valid) begin
                     test_tx_valid <= 1'b1; 
                     test_tx_data <= ascii_symbols[$urandom_range(8, 0)];
@@ -96,7 +101,7 @@ module alu_fpga_tb();
                 test_tx_valid <= 1'b0;
             end
 
-            if (rx_done) begin
+            if (rx_done == 1'b1) begin
                 $display("Received: %02h", rx_data);
             end
         end

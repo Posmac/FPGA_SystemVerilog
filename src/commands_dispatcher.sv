@@ -105,6 +105,7 @@ module commands_dispatcher(
                                 $display("SLTU");
                             end
                             default: begin
+                                $display("Wrong cmd");
                             end
                         endcase
                     end

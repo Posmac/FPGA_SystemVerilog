@@ -75,7 +75,6 @@ module response_sender #(
                 end
                 START: begin
                     current_state <= DATA;
-                    out.is_in_progress <= '1;
                     // tx_data <= in.packet.buffer[byte_index];
                     // byte_index <= byte_index + 1;
                     // $display("USER: START -> DATA");
@@ -92,7 +91,7 @@ module response_sender #(
                             //     tx_data,
                             //     byte_index - 1);
                         // end
-
+                        out.is_in_progress <= '1;
                         if (byte_index >= in.packet.len) begin
                             current_state <= STOP;
                             // $display("USER DATA -> STOP");
@@ -110,8 +109,6 @@ module response_sender #(
                         current_state <= IDLE;
                         out.was_sent <= '1;
                         out.is_in_progress <= '0;
-                        // out.was_sent <= '1;
-                        // out.is_in_progress <= '0;
                         // $display("USER: STOP -> IDLE");
                     end
                 end

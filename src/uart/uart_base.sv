@@ -9,7 +9,8 @@ module uart_rx
     input logic clk,
     input logic rst_n,
     input logic rx,
-    
+    input logic can_receive,
+
     output logic[7:0] rx_data,
     output logic rx_ready,
     output logic rx_done
@@ -47,18 +48,19 @@ module uart_rx
             if (32'(bod_counter) == BOD_HALF_DIVISOR) begin
                 unique case (current_state)
                     IDLE: begin
-                        if (rx == 1'b1) begin
-                            current_state <= START;
+                        if (rx == 1'b0 && can_receive) begin
+                            current_state <= DATA;
                             rx_ready <= 1'b0;
+                            bit_index     <= 0;
                             // $display("IDLE -> START");
                         end
                     end
                     START: begin
-                        if (rx == 1'b0) begin
-                            bit_index     <= 0;
-                            current_state <= DATA;
+                        // if (rx == 1'b0) begin
+                            // bit_index     <= 0;
+                            // current_state <= DATA;
                             // $display("START -> DATA");
-                        end 
+                        // end 
                     end
                     DATA: begin
                         // $display("DATA RX: %b", rx);
@@ -137,8 +139,8 @@ module uart_tx
             if (bod_counter == 0) begin
                 unique case (current_state)
                     IDLE: begin
-                        tx <= 1'b1;
                         if (!tx_ready) begin
+                            tx <= 1'b1; 
                             if (log) begin
                                 $display("  UART: IDLE -> START, D: %b(%c), I: %d, T: %b", shift_reg, shift_reg, bit_index, tx);
                             end

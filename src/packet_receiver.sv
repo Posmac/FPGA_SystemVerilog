@@ -81,7 +81,7 @@ module packet_receiver(
                         current_state <= RECV_CMD;
                         current_recv_byte <= 4'd0;
                         out.is_done <= 1'b1;
-                        // $strobe("Received data: CMD: %b, LEN: %b, ARG1: %b, ARG2: %b", incoming_packet.cmd, incoming_packet.len, incoming_packet.arg0, incoming_packet.arg1);
+                        $strobe("Received data: CMD: %b, LEN: %b, ARG1: %b, ARG2: %b", incoming_packet.cmd, incoming_packet.len, incoming_packet.arg0, incoming_packet.arg1);
                     end
                 end
             endcase

@@ -22,6 +22,7 @@ package uart_types;
 
   typedef struct packed {
       logic clk;
+      logic sim_clk;
       logic rst_n;
       logic rx;
   } uart_input_struct_t;
