@@ -52,6 +52,6 @@ src/packet_receiver.sv
 src/packet_validator.sv
 src/commands_dispatcher.sv
 src/response_sender.sv
-src/common.sv
+src/hil.sv
 
-tb/riscv32_fpga/alu_fpga_tb.sv
+// tb/riscv32_fpga/alu_fpga_tb.sv

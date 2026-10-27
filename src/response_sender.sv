@@ -3,6 +3,7 @@
 import architecture_types::*;
 import uart_types::*;
 import command_types::*;
+import response_types::*;
 
 // package response_types;
 //   localparam int RESPONSE_BUFFER_SIZE = 32;
@@ -37,21 +38,20 @@ module response_sender #(
     response_sender_state_t current_state = IDLE;
 
     logic[7:0]              tx_data = '0;
-    logic[7:0]              byte_index = '0;
-    logic                   log = 0;
-
     logic                   tx_ready;
+    logic[7:0]              byte_index = '0;
+
     uart_tx #(.BAUD_RATE(BAUD_RATE)) uart(
         .clk(in.clk),
         .rst_n(in.rst_n),
-        .log(log),
+        .log(1'b0),
         .tx_valid(out.is_in_progress),
         .tx_data(tx_data),
         .tx_ready(tx_ready),
         .tx(out.tx)
     );
 
-    always_ff @(posedge in.clk or negedge in.rst_n) begin
+    always_ff @(posedge in.clk) begin
         if (!in.rst_n) begin
             current_state <= IDLE;
             // tx_valid <= '0;

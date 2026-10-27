@@ -10,7 +10,7 @@ endpackage
 package uart_types;
   localparam int DEFAULT_BAUD_RATE = 115200;
   localparam int BOD_115200 = 115200;
-  localparam int BOD_921600 = 921600;
+  localparam int BOD_921600 = 460800;
   // localparam int RX_BAUD_RATE = 115200;
   // localparam int TX_BAUD_RATE = 115200 * 8;
   // localparam int RX_BOD_DIVISOR = CLK_FREQ / RX_BAUD_RATE;
@@ -33,6 +33,9 @@ package uart_types;
 endpackage
 
 package command_types;
+
+  import architecture_types::*;
+
  typedef enum logic[7:0] {
       NONE,
       CMD_PING,
@@ -61,6 +64,10 @@ package command_types;
 endpackage
 
 package packet_types;
+
+  import command_types::*;
+  import architecture_types::*;
+
   localparam int PACKET_TOTAL_SIZE  = 10;
   localparam int ARG_1_SIZE         = 4;
   localparam int ARG_2_SIZE         = 4;
@@ -88,6 +95,8 @@ endpackage
 
 package packet_validator_types;
 
+  import packet_types::*;
+
   typedef struct packed {
     logic       clk;
     logic       rst_n;
@@ -102,6 +111,9 @@ package packet_validator_types;
 endpackage
 
 package commands_dispatcher_types;
+
+  import packet_types::*;
+  import command_types::*;
 
   typedef struct packed {
     logic     clk;

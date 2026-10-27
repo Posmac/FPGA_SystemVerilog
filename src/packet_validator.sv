@@ -19,7 +19,7 @@ module packet_validator (
 
     packet_validator_state_t current_state = START;
 
-    always_ff @(posedge in.clk or negedge in.rst_n) begin
+    always_ff @(posedge in.clk) begin
         if (!in.rst_n) begin
             current_state       <= START;
             out.is_valid        <= 1'b0;
@@ -45,12 +45,16 @@ module packet_validator (
             SUCCESS: begin
                 current_state   <= START;
                 out.is_valid    <= 1'b1;
-                $strobe("VALID");
+                `ifndef SYNTHESIS
+                    $strobe("VALID");
+                `endif
             end
             ERROR: begin
                 current_state   <= START;
                 out.is_valid    <= 1'b0;
-                $strobe("INVALID");
+                `ifndef SYNTHESIS
+                    $strobe("INVALID");
+                `endif
             end
         endcase
         end

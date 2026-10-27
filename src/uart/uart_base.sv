@@ -26,7 +26,7 @@ module uart_rx
     logic [2:0]                 bit_index = 0;
     logic [7:0]                 data = 0;
 
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk) begin
         if (!rst_n) begin
             current_state <= IDLE;
             bod_counter <= 0;
@@ -34,6 +34,7 @@ module uart_rx
             data <= 0;
             rx_ready <= 1'b1;
             rx_done <= 1'b0;
+            rx_data <= '0;
         end else begin
             if (bod_counter >= DIV_WIDTH'(BOD_DIVISOR - 1)) begin
                 bod_counter <= 0;
@@ -114,7 +115,7 @@ module uart_tx
     logic [2:0]              bit_index = 0;
     logic [7:0]              shift_reg = 0;
 
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk) begin
         if (!rst_n) begin
             current_state <= IDLE;
             bod_counter   <= 0;

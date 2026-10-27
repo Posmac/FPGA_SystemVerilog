@@ -1,3 +1,5 @@
+import uart_types::*;
+
 module uart_user
 #(
     parameter int BAUD_RATE = DEFAULT_BAUD_RATE

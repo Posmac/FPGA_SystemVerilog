@@ -17,7 +17,7 @@ module alu_fpga_tb();
     // assign alu_in.sim_clk = sim_clk;
     assign alu_in.rst_n = rst_n;
 
-    common alu(
+    hil alu(
         .in(alu_in),
         .out(alu_out)
     );
