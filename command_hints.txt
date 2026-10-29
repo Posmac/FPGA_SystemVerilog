@@ -84,7 +84,6 @@ ecppll -n my_pll --clkin_name clk_in --clkout0_name clk_out -i 25 -o 400 --reset
 
 verilator --binary -j 0 --trace --timescale 1ns/1ps --top-module alu_fpga_tb -Wno-UNOPTFLAT -f riscv_files.f
 
-
 clear & clear
 yosys hil.ys
 nextpnr-ecp5 --45k --package CABGA381 --json hil.json --lpf lpf/hil.lpf --textcfg hil.config

@@ -26,15 +26,20 @@ module hil(
       input logic clk,
     //   input logic sim_clk,
     //   input logic rst_n,
-      input logic rx,
-      output logic tx
+      input logic tx,
+      output logic rx
     // input   uart_input_struct_t  in,
     // output  uart_output_struct_t out
 );
-
     logic rst_n;
     assign rst_n = 1'b1;
 
+    ///
+    response_sender_output_struct_t                     response_sender_out;
+    assign rx = response_sender_out.tx;
+    ///
+
+    ///
     logic[7:0]  rx_data;
     logic       rx_ready;
     logic       rx_done;
@@ -42,17 +47,19 @@ module hil(
     uart_rx #(.BAUD_RATE(BOD_115200)) uart_rx (
         .clk(clk),
         .rst_n(rst_n),
-        .rx(rx),
+        .rx(tx),
         .can_receive(1'b1),
         .rx_data(rx_data),
         .rx_ready(rx_ready),
         .rx_done(rx_done)
     );
+    ///
 
+    ///
     packet_recv_input_struct_t          packet_recv_in;
     assign packet_recv_in.clk =         clk;
     assign packet_recv_in.rst_n =       rst_n;
-    assign packet_recv_in.can_read =    uart_rx.rx_done;
+    assign packet_recv_in.can_read =    rx_done;
     assign packet_recv_in.data =        uart_rx.rx_data;
 
     packet_recv_output_struct_t         packet_recv_out;
@@ -61,53 +68,42 @@ module hil(
         .in     (packet_recv_in),
         .out    (packet_recv_out)
     );
+    ///
 
     // logic               response_prepared;
-    response_packet_t   response;
-    assign response.len          = 8'd16; 
+    // response_packet_t   response;
+    // assign response.len          = 8'd16; 
+    // assign response.buffer[0]    = "R"; // 'R'
+    // assign response.buffer[1]    = "E"; // 'E'
+    // assign response.buffer[2]    = "S"; // 'S'
+    // assign response.buffer[3]    = "P"; // 'P'
+    // assign response.buffer[4]    = " "; // 'O'
+    // assign response.buffer[5]    = ":"; // 'N'
 
-    // recv.incoming_packet
-    //   typedef struct packed {
-    //       command_t                           cmd;    // 1byte
-    //       logic [7:0]                         len;    // 1byte
-    //       logic [ARCHITECTURE_WIDTH - 1: 0]   arg0;   // 4 bytes
-    //       logic [ARCHITECTURE_WIDTH - 1: 0]   arg1;   // 4 bytes
-    //   } packet_t;
-    // Слово "RESPONSE " (Чистый латинский ASCII)
-    assign response.buffer[0]    = "C"; // 'R'
-    assign response.buffer[1]    = "\n"; // 'E'
-    assign response.buffer[2]    = 8'h53; // 'S'
-    assign response.buffer[3]    = 8'h50; // 'P'
-    assign response.buffer[4]    = 8'h4F; // 'O'
-    assign response.buffer[5]    = 8'h4E; // 'N'
+    // assign response.buffer[6]   = recv.incoming_packet.arg0[31:24];
+    // assign response.buffer[7]   = recv.incoming_packet.arg0[23:16];
+    // assign response.buffer[8]   = recv.incoming_packet.arg0[15:8];
+    // assign response.buffer[9]   = recv.incoming_packet.arg0[7:0];
 
-    assign response.buffer[6]   = recv.incoming_packet.arg0[31:24];
-    assign response.buffer[7]   = recv.incoming_packet.arg0[23:16];
-    assign response.buffer[8]   = recv.incoming_packet.arg0[15:8];
-    assign response.buffer[9]   = recv.incoming_packet.arg0[7:0];
-
-    assign response.buffer[10]   = recv.incoming_packet.arg1[31:24];
-    assign response.buffer[11]   = recv.incoming_packet.arg1[23:16];
-    assign response.buffer[12]   = recv.incoming_packet.arg1[15:8];
-    assign response.buffer[13]   = recv.incoming_packet.arg1[7:0];
+    // assign response.buffer[10]   = recv.incoming_packet.arg1[31:24];
+    // assign response.buffer[11]   = recv.incoming_packet.arg1[23:16];
+    // assign response.buffer[12]   = recv.incoming_packet.arg1[15:8];
+    // assign response.buffer[13]   = recv.incoming_packet.arg1[7:0];
     
-    // Управляющие символы переноса строки (Без escape-последовательностей)
-    assign response.buffer[14]   = 8'h0A; // '\n' (Line Feed - перенос строки)
-    assign response.buffer[15]   = 8'h0D; // '\r' (Carriage Return - возврат каретки)
+    // // Управляющие символы переноса строки (Без escape-последовательностей)
+    // assign response.buffer[14]   = 8'h0A; // '\n' (Line Feed - перенос строки)
+    // assign response.buffer[15]   = 8'h0D; // '\r' (Carriage Return - возврат каретки)
 
-    response_sender_input_struct_t                      response_sender_in;
-    assign response_sender_in.clk =                     clk;
-    assign response_sender_in.rst_n =                   rst_n;
-    assign response_sender_in.can_start_sending =       packet_recv_out.is_done;
-    assign response_sender_in.packet =                  response; 
+    // response_sender_input_struct_t                      response_sender_in;
+    // assign response_sender_in.clk =                     clk;
+    // assign response_sender_in.rst_n =                   rst_n;
+    // assign response_sender_in.can_start_sending =       packet_recv_out.is_done;
+    // assign response_sender_in.packet =                  response; 
 
-    response_sender_output_struct_t                     response_sender_out;
-    assign tx = response_sender_out.tx;
-
-    response_sender#(.BAUD_RATE(BOD_115200)) response_sender(
-        .in     (response_sender_in),
-        .out    (response_sender_out)
-    );
+    // response_sender#(.BAUD_RATE(BOD_115200)) response_sender(
+    //     .in     (response_sender_in),
+    //     .out    (response_sender_out)
+    // );
 
     // packet_validator_input_struct_t             packet_validator_in;
     // assign packet_validator_in.clk =            clk;

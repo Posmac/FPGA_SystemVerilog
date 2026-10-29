@@ -21,6 +21,8 @@ module packet_receiver(
     packet_receiver_state_t     current_state = RECV_CMD;
     logic[3:0]                  current_recv_byte = 4'd0;
 
+    logic read_next = '0;
+
     //FLOW: 
 
     // UART
@@ -45,16 +47,20 @@ module packet_receiver(
                 out.is_done <= 1'b0;
             end
 
+            if (can_read) {
+                read_next <= 1'b1;
+            }
+
             unique case(current_state)
                 RECV_CMD: begin
-                    if (in.can_read) begin
+                    if (can_read) begin
                         current_state <= RECV_LEN;
                         incoming_packet.cmd <= command_t'(in.data[7:0]);
                         //filter shit out
                     end
                 end 
                 RECV_LEN: begin
-                    if (in.can_read) begin
+                    if (can_read) begin
                         current_state <= RECV_ARG_1;
                         incoming_packet.len <= in.data[7:0];
                         //filter shit out
@@ -62,7 +68,7 @@ module packet_receiver(
                 end
                 RECV_ARG_1: begin
                     if (32'(current_recv_byte) < ARG_1_SIZE) begin
-                        if (in.can_read) begin
+                        if (can_read) begin
                             incoming_packet.arg0[current_recv_byte * 8 +: 8] <= in.data[7:0];
                             current_recv_byte <= current_recv_byte + 1;
                         end
@@ -73,7 +79,7 @@ module packet_receiver(
                 end
                 RECV_ARG_2: begin
                     if (32'(current_recv_byte) < ARG_2_SIZE) begin
-                        if (in.can_read) begin
+                        if (can_read) begin
                             incoming_packet.arg1[current_recv_byte * 8 +: 8] <= in.data[7:0];
                             current_recv_byte <= current_recv_byte + 1;
                         end
