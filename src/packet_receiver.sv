@@ -21,6 +21,7 @@ module packet_receiver(
     packet_receiver_state_t     current_state = RECV_CMD;
     logic[3:0]                  current_recv_byte = 4'd0;
 
+    logic reading_in_process 
     logic read_next = '0;
 
     //FLOW: 
