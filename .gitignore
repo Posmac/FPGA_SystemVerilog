@@ -7,3 +7,4 @@ isa
 *.config
 *.json
 *.bit
+target
