@@ -1,16 +1,10 @@
 LOCATE COMP "clk" SITE "P3";
 IOBUF PORT "clk" IO_TYPE=LVCMOS33 PULLMODE=UP;
 
-#LOCATE COMP "sim_clk" SITE "P3";
-#IOBUF PORT "sim_clk" IO_TYPE=LVCMOS33 PULLMODE=UP;
+# Физический пин J17 (UART2_RX) — это ВХОД для FPGA
+LOCATE COMP "uart_gpio_rx" SITE "H18"; 
+IOBUF PORT "uart_gpio_rx" IO_TYPE=LVCMOS33;
 
-LOCATE COMP "rst_n" SITE "E1";
-IOBUF PORT "rst_n" IO_TYPE=LVCMOS33 PULLMODE=UP;
-
-#slow daplink receiver
-LOCATE COMP "rx" SITE "H18";
-IOBUF PORT "rx" IO_TYPE=LVCMOS33;
-
-#fast uart transmitter
-LOCATE COMP "tx" SITE "K18";
-IOBUF PORT "tx" IO_TYPE=LVCMOS33;
+# Физический пин H18 (UART2_TX) — это ВЫХОД из FPGA
+LOCATE COMP "uart_gpio_tx" SITE "J17"; 
+IOBUF PORT "uart_gpio_tx" IO_TYPE=LVCMOS33;

@@ -10,8 +10,8 @@ module alu_fpga_tb();
 
     hil alu(
         .clk(clk),
-        .tx(test_tx),
-        .rx()
+        .uart_gpio_rx(test_tx),
+        .uart_gpio_tx()
     );
 
     logic[7:0] ascii_symbols[9] = '{8'd1, 8'd2, 8'd3, 8'd4, 8'd128, 8'd255, 8'd0, 8'd67, 8'd99};
@@ -70,7 +70,7 @@ module alu_fpga_tb();
         if (rst_n) begin
             test_tx_valid <= 1'b1; 
             if (test_tx_ready) begin
-                test_tx_data <= $urandom_range(255, 1)[7:0];
+                test_tx_data <= $urandom_range(10, 1)[7:0];
                 $strobe("Data sent");
             end
         end

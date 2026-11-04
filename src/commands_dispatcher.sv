@@ -6,6 +6,7 @@ import packet_recv_types::*;
 import packet_validator_types::*;
 import commands_dispatcher_types::*;
 import command_types::*;
+import packet_types::*;
 
 typedef enum logic [1:0] { 
     NONE,
@@ -29,31 +30,41 @@ module commands_dispatcher(
     input commands_dispatcher_input_struct_t    in,
     output commands_dispatcher_output_struct_t  out
 );
-    commands_dispatcher_state_t current_state;
+    commands_dispatcher_state_t current_state = NONE;
+    packet_t                    packet;
+
+    logic disp;
+    logic[31:0] out1;
+    logic[31:0] out2;
+    logic[7:0]  cmd;
+    assign disp = out.is_dispatched;
+    assign out1 = packet.arg0;
+    assign out2 = packet.arg1;
+    assign cmd = packet.cmd;
 
     always_ff @(posedge in.clk) begin
         if (!in.rst_n) begin
             current_state       <= NONE;
             out.is_dispatched   <= 1'b0;
-        end begin
-            if (out.is_dispatched) begin
-                out.is_dispatched <= 1'b0;
-            end
+        end else begin
+            // if (out.is_dispatched) begin
+            out.is_dispatched <= 1'b0;
+            // end
             unique case(current_state)
                 NONE: begin
                     if (in.is_valid) begin
+                        packet <= in.packet;
                         current_state <= ROUTE;
                     end
                 end
                 ROUTE: begin
                     //ALU
                     current_state <= FINISH;
-                    if (in.packet.cmd > 0 && in.packet.cmd < 10 ) begin
+                    if (packet.cmd < 10 ) begin
                         out.command <= CMD_ALU_EXEC;
-                        out.alu_packet.a_in <= in.packet.arg0;
-                        out.alu_packet.b_in <= in.packet.arg1;
-                        out.is_dispatched <= 1'b1;
-                        unique case(command_types::alu_command_t'(in.packet.cmd))
+                        out.alu_packet.a_in <= packet.arg0;
+                        out.alu_packet.b_in <= packet.arg1;
+                        unique case(command_types::alu_command_t'(packet.cmd))
                             ADD: begin
                                 // add         [000]      0[0]0_0000             0_000 (in_0)               in_0
                                 out.alu_packet.op_in <= 4'b0000;
@@ -114,8 +125,10 @@ module commands_dispatcher(
                 end
                 FINISH: begin
                     current_state <= NONE;
+                    out.is_dispatched <= 1'b1;
                 end
                 default: begin
+                    // current_state <= NONE;
                 end
             endcase
         end

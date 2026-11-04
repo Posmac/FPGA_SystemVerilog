@@ -26,17 +26,17 @@ module hil(
       input logic clk,
     //   input logic sim_clk,
     //   input logic rst_n,
-      input logic tx,
-      output logic rx
+      input logic uart_gpio_rx, //tx from external UART
+      output logic uart_gpio_tx //rx to external UART
     // input   uart_input_struct_t  in,
     // output  uart_output_struct_t out
 );
     logic rst_n;
     assign rst_n = 1'b1;
 
-    ///
+    // ///
     response_sender_output_struct_t                     response_sender_out;
-    assign rx = response_sender_out.tx;
+    assign uart_gpio_tx = response_sender_out.tx;
     ///
 
     ///
@@ -47,8 +47,8 @@ module hil(
     uart_rx #(.BAUD_RATE(BOD_115200)) uart_rx (
         .clk(clk),
         .rst_n(rst_n),
-        .rx(tx),
-        .can_receive(1'b1),
+        .rx(uart_gpio_rx),
+        .can_receive(!response_sender_out.is_in_progress),
         .rx_data(rx_data),
         .rx_ready(rx_ready),
         .rx_done(rx_done)
@@ -68,171 +68,153 @@ module hil(
         .in     (packet_recv_in),
         .out    (packet_recv_out)
     );
-    ///
 
-    // logic               response_prepared;
-    // response_packet_t   response;
-    // assign response.len          = 8'd16; 
-    // assign response.buffer[0]    = "R"; // 'R'
-    // assign response.buffer[1]    = "E"; // 'E'
-    // assign response.buffer[2]    = "S"; // 'S'
-    // assign response.buffer[3]    = "P"; // 'P'
-    // assign response.buffer[4]    = " "; // 'O'
-    // assign response.buffer[5]    = ":"; // 'N'
+    packet_validator_input_struct_t             packet_validator_in;
+    assign packet_validator_in.clk =            clk;
+    assign packet_validator_in.rst_n =          rst_n;
+    assign packet_validator_in.can_validate =   packet_recv_out.is_done;
+    assign packet_validator_in.packet =         recv.incoming_packet;
 
-    // assign response.buffer[6]   = recv.incoming_packet.arg0[31:24];
-    // assign response.buffer[7]   = recv.incoming_packet.arg0[23:16];
-    // assign response.buffer[8]   = recv.incoming_packet.arg0[15:8];
-    // assign response.buffer[9]   = recv.incoming_packet.arg0[7:0];
+    packet_validator_output_struct_t            packet_validator_out;
 
-    // assign response.buffer[10]   = recv.incoming_packet.arg1[31:24];
-    // assign response.buffer[11]   = recv.incoming_packet.arg1[23:16];
-    // assign response.buffer[12]   = recv.incoming_packet.arg1[15:8];
-    // assign response.buffer[13]   = recv.incoming_packet.arg1[7:0];
-    
-    // // Управляющие символы переноса строки (Без escape-последовательностей)
-    // assign response.buffer[14]   = 8'h0A; // '\n' (Line Feed - перенос строки)
-    // assign response.buffer[15]   = 8'h0D; // '\r' (Carriage Return - возврат каретки)
+    packet_validator validator(
+        .in     (packet_validator_in),
+        .out    (packet_validator_out)
+    );
 
-    // response_sender_input_struct_t                      response_sender_in;
-    // assign response_sender_in.clk =                     clk;
-    // assign response_sender_in.rst_n =                   rst_n;
-    // assign response_sender_in.can_start_sending =       packet_recv_out.is_done;
-    // assign response_sender_in.packet =                  response; 
+    commands_dispatcher_input_struct_t          commands_dispatcher_in;
+    assign commands_dispatcher_in.clk =         clk;
+    assign commands_dispatcher_in.rst_n =       rst_n;
+    assign commands_dispatcher_in.packet =      validator.packet;
+    assign commands_dispatcher_in.is_valid =    packet_validator_out.is_valid;
 
-    // response_sender#(.BAUD_RATE(BOD_115200)) response_sender(
-    //     .in     (response_sender_in),
-    //     .out    (response_sender_out)
-    // );
+    commands_dispatcher_output_struct_t         commands_dispatcher_out;
 
-    // packet_validator_input_struct_t             packet_validator_in;
-    // assign packet_validator_in.clk =            clk;
-    // assign packet_validator_in.rst_n =          rst_n;
-    // assign packet_validator_in.can_validate =   packet_recv_out.is_done;
-    // assign packet_validator_in.packet =         recv.incoming_packet;
+    commands_dispatcher dispatcher(
+        .in     (commands_dispatcher_in),
+        .out    (commands_dispatcher_out)
+    );
 
-    // packet_validator_output_struct_t            packet_validator_out;
+    logic [ARCHITECTURE_WIDTH - 1: 0]    a_out;
+    logic [ARCHITECTURE_WIDTH - 1: 0]    slt_out;
+    logic [ARCHITECTURE_WIDTH - 1: 0]    sltu_out;
 
-    // packet_validator validator(
-    //     .in     (packet_validator_in),
-    //     .out    (packet_validator_out)
-    // );
+    Alu_Unit alu(
+        .a_in       (commands_dispatcher_out.alu_packet.a_in),
+        .b_in       (commands_dispatcher_out.alu_packet.b_in),
+        .op_in      (commands_dispatcher_out.alu_packet.op_in),
+        .a_out      (a_out),
+        .slt_out    (slt_out),
+        .sltu_out   (sltu_out)
+    );
 
-    // commands_dispatcher_input_struct_t          commands_dispatcher_in;
-    // assign commands_dispatcher_in.clk =         clk;
-    // assign commands_dispatcher_in.rst_n =       rst_n;
-    // assign commands_dispatcher_in.packet =      recv.incoming_packet;
-    // assign commands_dispatcher_in.is_valid =    packet_validator_out.is_valid;
+    logic               response_prepared;
+    response_packet_t   response;
 
-    // commands_dispatcher_output_struct_t         commands_dispatcher_out;
+    always_ff @(posedge clk) begin
+        // if(!rsn_n) begin
+        // end begin
+            response_prepared <= 1'b0;
 
-    // commands_dispatcher dispatcher(
-    //     .in     (commands_dispatcher_in),
-    //     .out    (commands_dispatcher_out)
-    // );
+            if (commands_dispatcher_out.is_dispatched) begin
+                // $display("Ready");
+                response_prepared <= 1'b1;
+                response.len          <= 8'd16;
+ 
+                // response.buffer[0]    <= "R"; // 'R'
+                // response.buffer[1]    <= "E"; // 'E'
+                // response.buffer[2]    <= ":"; // 'S'
+                // response.buffer[3]    <= " "; // 'P'
+                // response.buffer[4]    <= "R";
+                // response.buffer[5]    <= "R";
 
-    // logic [ARCHITECTURE_WIDTH - 1: 0]    a_out;
-    // logic [ARCHITECTURE_WIDTH - 1: 0]    slt_out;
-    // logic [ARCHITECTURE_WIDTH - 1: 0]    sltu_out;
+                // response.buffer[6]    <= "R"; // Младший байт идет первым
+                // response.buffer[7]    <= "R";
+                // response.buffer[8]    <= "R";
+                // response.buffer[9]    <= "R"; // Старший байт идет последним
 
-    // Alu_Unit alu(
-    //     .a_in       (commands_dispatcher_out.alu_packet.a_in),
-    //     .b_in       (commands_dispatcher_out.alu_packet.b_in),
-    //     .op_in      (commands_dispatcher_out.alu_packet.op_in),
-    //     .a_out      (a_out),
-    //     .slt_out    (slt_out),
-    //     .sltu_out   (sltu_out)
-    // );
+                // response.buffer[10]   <= "R";               
+                // response.buffer[11]   <= "R";
+                // response.buffer[12]   <= "R";
+                // response.buffer[13]   <= "R";
+                
+                // response.buffer[14]   <= 8'h0A; // '\n' (Line Feed - перенос строки)
+                // response.buffer[15]   <= 8'h0D; // '\r' (Carriage Return - возврат каретки)
 
+                // response_prepared <= 1'b1;
+                // unique case(commands_dispatcher_out.command) 
+                //     command_types::NONE: begin
+                //         response.len      <= 8'd2; 
+                //         response.buffer   <= '1;
+                //     end
+                //     command_types::CMD_PING: begin
+                //         response.len      <= 8'd2; 
+                //         response.buffer   <= '1;
+                //     end
+                //     command_types::CMD_ALU_EXEC: begin
+                //         response_prepared <= 1'b1;
+                //         response.len      <= 8'd16; // Полезная длина пакета
 
-    // always_ff @(posedge clk) begin
-    //     if (!rst_n) begin
-    //     end begin
-    //         if(response_sender_out.was_sent) begin
-    //             response_prepared <= 1'b0;
-    //         end
+                        // 1. Полностью очищаем весь 32-байтный буфер
+                        // response.buffer   <= '1;
 
-    //         if (1'b1) begin
-    //             unique case(commands_dispatcher_out.command) 
-    //                 command_types::NONE: begin
-    //                     response.len      <= 8'd2; 
-    //                     response.buffer   <= '1;
-    //                 end
-    //                 command_types::CMD_PING: begin
-    //                     response.len      <= 8'd2; 
-    //                     response.buffer   <= '1;
-    //                 end
-    //                 command_types::CMD_ALU_EXEC: begin
-    //                     response_prepared <= 1'b1;
-    //                     response.len      <= 8'd2; // Полезная длина пакета
+                        // 2. Заполняем буфер линейно (слева направо, от 0 до 15)
+                        // Байты 0..2: Заголовок пакета
+                        response.buffer[0]  <= 8'd2;
+                        response.buffer[1]  <= 8'd16;
 
-    //                     // 1. Полностью очищаем весь 32-байтный буфер
-    //                     response.buffer   <= '1;
+                        // Байты 3..6: Вход А (Big-Endian — старший байт улетит первым)
+                        response.buffer[2]  <= commands_dispatcher_out.alu_packet.a_in[31:24];
+                        response.buffer[3]  <= commands_dispatcher_out.alu_packet.a_in[23:16];
+                        response.buffer[4]  <= commands_dispatcher_out.alu_packet.a_in[15:8];
+                        response.buffer[5]  <= commands_dispatcher_out.alu_packet.a_in[7:0];
 
-    //                     // 2. Заполняем буфер линейно (слева направо, от 0 до 15)
-    //                     // Байты 0..2: Заголовок пакета
-    //                     // response.buffer[0]  <= command_types::CMD_ALU_EXEC;
-    //                     // response.buffer[0]  <= 8'd2;
-    //                     // response.buffer[1]  <= 8'd16;
-    //                     // response.buffer[2]  <= 8'h00; // Статус (OK)
+                        response.buffer[6]    <= "R"; // Младший байт идет первым
+                        response.buffer[7]    <= "R";
+                        response.buffer[8]    <= "R";
+                        response.buffer[9]    <= "R"; // Старший байт идет последним
 
-    //                     // // // Байты 3..6: Вход А (Big-Endian — старший байт улетит первым)
-    //                     // response.buffer[3]  <= commands_dispatcher_out.alu_packet.a_in[31:24];
-    //                     // response.buffer[4]  <= commands_dispatcher_out.alu_packet.a_in[23:16];
-    //                     // response.buffer[5]  <= commands_dispatcher_out.alu_packet.a_in[15:8];
-    //                     // response.buffer[6]  <= commands_dispatcher_out.alu_packet.a_in[7:0];
+                        // // // Байты 7..10: Вход B (Big-Endian)
+                        // response.buffer[6]  <= commands_dispatcher_out.alu_packet.b_in[31:24];
+                        // response.buffer[7]  <= commands_dispatcher_out.alu_packet.b_in[23:16];
+                        // response.buffer[8]  <= commands_dispatcher_out.alu_packet.b_in[15:8];
+                        // response.buffer[9]  <= commands_dispatcher_out.alu_packet.b_in[7:0];
 
-    //                     // // // Байты 7..10: Вход B (Big-Endian)
-    //                     // response.buffer[7]  <= commands_dispatcher_out.alu_packet.b_in[31:24];
-    //                     // response.buffer[8]  <= commands_dispatcher_out.alu_packet.b_in[23:16];
-    //                     // response.buffer[9]  <= commands_dispatcher_out.alu_packet.b_in[15:8];
-    //                     // response.buffer[10] <= commands_dispatcher_out.alu_packet.b_in[7:0];
+                        // // // Байты 11..14: Результат вычисления ALU (Big-Endian)
+                        response.buffer[10] <= a_out[31:24];
+                        response.buffer[11] <= a_out[23:16];
+                        response.buffer[12] <= a_out[15:8];
+                        response.buffer[13] <= a_out[7:0];
 
-    //                     // // // Байты 11..14: Результат вычисления ALU (Big-Endian)
-    //                     // response.buffer[11] <= a_out[31:24];
-    //                     // response.buffer[12] <= a_out[23:16];
-    //                     // response.buffer[13] <= a_out[15:8];
-    //                     // response.buffer[14] <= a_out[7:0];
+                        // // Байт 15: Хвост пакета / Резерв
+                        response.buffer[14]   <= 8'h0A; // '\n' (Line Feed - перенос строки)
+                        response.buffer[15]   <= 8'h0D; // '\r' (Carriage Return - возврат каретки)
+                        // $display("Response was prepared, sending");
+                        // // Байты с 16 по 31 останутся нулевыми и не отправятся,
+                        // // так как отправитель выйдет из цикла по условию (byte_index >= 16)
 
-    //                     // // Байт 15: Хвост пакета / Резерв
-    //                     response.buffer[15] <= 8'h00;
-    //                     $display("Response was prepared, sending");
-    //                     // Байты с 16 по 31 останутся нулевыми и не отправятся,
-    //                     // так как отправитель выйдет из цикла по условию (byte_index >= 16)
+                        // $display("ALU Result: %d(%b):%d(%b) = %d(%b)", 
+                        //         commands_dispatcher_out.alu_packet.a_in, commands_dispatcher_out.alu_packet.a_in, 
+                        //         commands_dispatcher_out.alu_packet.b_in, commands_dispatcher_out.alu_packet.b_in, 
+                        //         a_out, a_out);
+                    // end
+                    // default: begin
+                    //     response.len      <= 8'd2; 
+                    //     response.buffer   <= '1;
+                    // end
+                // endcase
+            end
+        // end
+    end
 
-    //                     $display("ALU Result: %d(%b):%d(%b) = %d(%b)", 
-    //                             commands_dispatcher_out.alu_packet.a_in, commands_dispatcher_out.alu_packet.a_in, 
-    //                             commands_dispatcher_out.alu_packet.b_in, commands_dispatcher_out.alu_packet.b_in, 
-    //                             a_out, a_out);
-    //                 end
-    //                 default: begin
-    //                     response.len      <= 8'd2; 
-    //                     response.buffer   <= '1;
-    //                 end
-    //             endcase
-    //         end
-    //     end
-    // end
+    response_sender_input_struct_t                      response_sender_in;
+    assign response_sender_in.clk =                     clk;
+    assign response_sender_in.rst_n =                   rst_n;
+    assign response_sender_in.can_start_sending =       response_prepared;
+    assign response_sender_in.packet =                  response; 
 
-    // //LOGGING
-    // always_ff @(posedge clk) begin
-    //     if (!rst_n) begin
-    //     end begin
-    //         // if (response_prepared) begin
-    //         // end
-    //         if (response_sender_out.was_sent) begin
-    //             $display("=== [TX PACKET SENT] ===");
-    //             $display("Type/Cmd: 0x%02h", response.buffer[0]);
-    //             $display("Length:   %0d bytes", response.len);
-    //             // $display("Buffer: %b", response.buffer);
-    //             $write("Raw Data: ");
-    //             for (int i = 0; i < response.len; i++) begin
-    //                 $write("%02h ", response.buffer[i]);
-    //             end
-    //             $display("\n========================\n");
-    //         end
-
-    //     end
-    // end
-
+    response_sender#(.BAUD_RATE(BOD_115200)) response_sender(
+        .in     (response_sender_in),
+        .out    (response_sender_out)
+    );
 endmodule

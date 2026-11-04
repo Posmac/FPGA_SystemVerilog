@@ -18,6 +18,12 @@ module response_sender #(
     logic[7:0]              tx_data = '0;
     logic                   tx_ready;
     logic[7:0]              byte_index = '0;
+    logic                   can_send;
+    logic                   was_sent;
+    logic                   in_progress;
+    assign can_send = in.can_start_sending;
+    assign in_progress = out.is_in_progress;
+    assign was_sent = out.was_sent; 
 
     uart_tx #(.BAUD_RATE(BAUD_RATE)) uart(
         .clk(in.clk),
@@ -35,9 +41,9 @@ module response_sender #(
             out.was_sent <= '0;
             out.is_in_progress <= '0;
         end else begin
-            if (out.was_sent) begin
-                out.was_sent <= '0;
-            end
+            // if (out.was_sent) begin
+            out.was_sent <= '0;
+            // end
 
             unique case (current_state)
                 IDLE: begin
@@ -46,6 +52,7 @@ module response_sender #(
                     if (in.can_start_sending && !out.was_sent && tx_ready) begin
                         current_state <= START;
                         byte_index <= '0;
+                        $display("Started");
                     end
                 end
                 START: begin

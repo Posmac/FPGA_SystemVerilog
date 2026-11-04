@@ -44,13 +44,13 @@ module packet_receiver(
             incoming_packet.arg0 <= 0;
             incoming_packet.arg1 <= 0;
         end begin
-            if (out.is_done) begin
-                out.is_done <= 1'b0;
-                incoming_packet.len <= 0;
-                incoming_packet.cmd <= command_t'(7'd0);
-                incoming_packet.arg0 <= 0;
-                incoming_packet.arg1 <= 0;
-            end
+            // if (out.is_done) begin
+            out.is_done <= 1'b0;
+                // incoming_packet.len <= 0;
+                // incoming_packet.cmd <= command_t'(7'd0);
+                // incoming_packet.arg0 <= 0;
+                // incoming_packet.arg1 <= 0;
+            // end
             unique case(current_state)
                 RECV_CMD: begin
                     if (in.can_read) begin
@@ -86,7 +86,8 @@ module packet_receiver(
                     end else begin
                         current_state <= RECV_CMD;
                         current_recv_byte <= 4'd0;
-                        out.is_done <= 1'b1;
+                        out .is_done <= 1'b1;
+                        ///TODO: assign out.packet!
                         `ifndef SYNTHESIS
                             $strobe("Received data: CMD: %b, LEN: %b, ARG1: %b, ARG2: %b", incoming_packet.cmd, incoming_packet.len, incoming_packet.arg0, incoming_packet.arg1);
                         `endif

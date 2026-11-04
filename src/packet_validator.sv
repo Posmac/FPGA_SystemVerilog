@@ -17,26 +17,31 @@ module packet_validator (
         ERROR
     } packet_validator_state_t;
 
-    packet_validator_state_t current_state = START;
+    packet_validator_state_t    current_state = START;
+    packet_t                    packet;
+    logic valid;
+    assign valid = out.is_valid;
 
     always_ff @(posedge in.clk) begin
-        if (!in.rst_n) begin
-            current_state       <= START;
-            out.is_valid        <= 1'b0;
-        end else begin
+        // if (!in.rst_n) begin
+        //     // current_state       <= START;
+        //     // out.is_valid        <= 1'b0;
+        // end else begin
 
-        if (out.is_valid) begin
-            out.is_valid <= 1'b0;
-        end
+        // if (out.is_valid) begin
+        out.is_valid <= 1'b0;
+        // end
 
         unique case (current_state)
             START: begin
+                out.is_valid <= 1'b0; 
                 if (in.can_validate) begin
+                    packet <= in.packet;
                     current_state <= CHECK;
-                end
+                end    
             end
             CHECK: begin
-                if (in.packet.len > 0) begin
+                if (packet.len > 8'd0) begin
                     current_state <= SUCCESS;
                 end else begin
                     current_state <= ERROR;
@@ -49,6 +54,7 @@ module packet_validator (
                     $strobe("VALID");
                 `endif
             end
+
             ERROR: begin
                 current_state   <= START;
                 out.is_valid    <= 1'b0;
@@ -56,8 +62,9 @@ module packet_validator (
                     $strobe("INVALID");
                 `endif
             end
+
         endcase
-        end
+        // end
     end
 
 endmodule
