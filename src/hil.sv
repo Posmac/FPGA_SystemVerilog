@@ -164,27 +164,22 @@ module hil(
                         response.buffer[1]  <= 8'd16;
 
                         // Байты 3..6: Вход А (Big-Endian — старший байт улетит первым)
-                        response.buffer[2]  <= commands_dispatcher_out.alu_packet.a_in[31:24];
-                        response.buffer[3]  <= commands_dispatcher_out.alu_packet.a_in[23:16];
-                        response.buffer[4]  <= commands_dispatcher_out.alu_packet.a_in[15:8];
-                        response.buffer[5]  <= commands_dispatcher_out.alu_packet.a_in[7:0];
-
-                        response.buffer[6]    <= "R"; // Младший байт идет первым
-                        response.buffer[7]    <= "R";
-                        response.buffer[8]    <= "R";
-                        response.buffer[9]    <= "R"; // Старший байт идет последним
-
+                        response.buffer[5]  <= commands_dispatcher_out.alu_packet.a_in[31:24];
+                        response.buffer[4]  <= commands_dispatcher_out.alu_packet.a_in[23:16];
+                        response.buffer[3]  <= commands_dispatcher_out.alu_packet.a_in[15:8];
+                        response.buffer[2]  <= commands_dispatcher_out.alu_packet.a_in[7:0];
+                       
                         // // // Байты 7..10: Вход B (Big-Endian)
-                        // response.buffer[6]  <= commands_dispatcher_out.alu_packet.b_in[31:24];
-                        // response.buffer[7]  <= commands_dispatcher_out.alu_packet.b_in[23:16];
-                        // response.buffer[8]  <= commands_dispatcher_out.alu_packet.b_in[15:8];
-                        // response.buffer[9]  <= commands_dispatcher_out.alu_packet.b_in[7:0];
+                        response.buffer[9]  <= commands_dispatcher_out.alu_packet.b_in[31:24];
+                        response.buffer[8]  <= commands_dispatcher_out.alu_packet.b_in[23:16];
+                        response.buffer[7]  <= commands_dispatcher_out.alu_packet.b_in[15:8];
+                        response.buffer[6]  <= commands_dispatcher_out.alu_packet.b_in[7:0];
 
                         // // // Байты 11..14: Результат вычисления ALU (Big-Endian)
-                        response.buffer[10] <= a_out[31:24];
-                        response.buffer[11] <= a_out[23:16];
-                        response.buffer[12] <= a_out[15:8];
-                        response.buffer[13] <= a_out[7:0];
+                        response.buffer[13] <= a_out[31:24];
+                        response.buffer[12] <= a_out[23:16];
+                        response.buffer[11] <= a_out[15:8];
+                        response.buffer[10] <= a_out[7:0];
 
                         // // Байт 15: Хвост пакета / Резерв
                         response.buffer[14]   <= 8'h0A; // '\n' (Line Feed - перенос строки)
